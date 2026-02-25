@@ -12,7 +12,8 @@ public class BookFullDto {
   private String publisher;
 
 
-  public BookFullDto(long id, String name, String author, long pageCount, Date publishDate, String publisher) {
+  public BookFullDto(long id, String name, String author,
+                     long pageCount, Date publishDate, String publisher) {
     this.id = id;
     this.name = name;
     this.author = author;

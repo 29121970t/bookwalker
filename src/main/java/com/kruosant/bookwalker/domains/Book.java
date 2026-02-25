@@ -24,7 +24,8 @@ public class Book {
   }
 
   // All-arguments constructor
-  public Book(long id, String name, String author, long pageCount, Date publishDate, String publisher) {
+  public Book(long id, String name, String author, long pageCount,
+              Date publishDate, String publisher) {
     this.id = id;
     this.name = name;
     this.author = author;

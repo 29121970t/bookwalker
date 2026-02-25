@@ -11,7 +11,8 @@ public class BookCreateDto {
   private String publisher;
 
 
-  public BookCreateDto(String name, String author, long pageCount, Date publishDate, String publisher) {
+  public BookCreateDto(String name, String author, long pageCount,
+                       Date publishDate, String publisher) {
 
     this.name = name;
     this.author = author;
@@ -61,8 +62,8 @@ public class BookCreateDto {
     this.publisher = publisher;
   }
 
-  public static com.kruosant.bookwalker.dtos.BookFullDto.Builder builder() {
-    return new com.kruosant.bookwalker.dtos.BookFullDto.Builder();
+  public static Builder builder() {
+    return new Builder();
   }
 
   public static class Builder {
@@ -76,23 +77,20 @@ public class BookCreateDto {
     Builder() {
     }
 
-    public Builder id(long id) {
-      this.id = id;
-      return this;
-    }
+
 
     public Builder name(String name) {
       this.name = name;
       return this;
     }
 
-    public Builder author(String author) {
-      this.author = author;
+    public Builder pageCount(long pageCount) {
+      this.pageCount = pageCount;
       return this;
     }
 
-    public Builder pageCount(long pageCount) {
-      this.pageCount = pageCount;
+    public Builder id(long id) {
+      this.id = id;
       return this;
     }
 
@@ -106,8 +104,14 @@ public class BookCreateDto {
       return this;
     }
 
+    public Builder author(String author) {
+      this.author = author;
+      return this;
+    }
+
     public BookFullDto build() {
-      return new com.kruosant.bookwalker.dtos.BookFullDto(id, name, author, pageCount, publishDate, publisher);
+      return new com.kruosant.bookwalker.dtos.BookFullDto(id, name, author, pageCount,
+          publishDate, publisher);
     }
   }
 }
