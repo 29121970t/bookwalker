@@ -1,6 +1,14 @@
 # Bookwalker API
 
-A simple RESTful API for managing a collection of books. Built with Spring Boot, this application provides endpoints to create, retrieve. 
+A simple RESTful API for managing a book marketplace. Built with Spring Boot, this application provides endpoints to create, retrieve. 
+
+## Endpoints
+| Method | Endpoint    | Description                          | Request             |
+|--------|-------------|--------------------------------------|---------------------|
+| GET    | /book/{id}  | Retrieve a book by its ID            | None                |
+| GET    | /book?name= | Search books by name (partial match) | None                |
+| GET    | /book       | Retrieve all books                   | None                |
+| POST   | /book       | Add a new book                       | BookCreateDto  JSON |
 
 ## Technologies Used
 - **Java 25**

@@ -24,7 +24,7 @@ public final class BookController {
     return service.getById(id);
   }
 
-  @GetMapping("/search")
+  @GetMapping("/book")
   public List<BookFullDto> getByName(@RequestParam String name) {
     return service.getAllByName(name);
   }
