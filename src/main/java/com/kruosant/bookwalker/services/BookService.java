@@ -28,7 +28,7 @@ public class BookService {
       throw new ResourceNotFoundException("Not found");
     }
 
-    return books.stream().map(mapper::toBookDto).collect(Collectors.toList());
+    return books.stream().map(mapper::toBookDto).toList();
   }
 
   public BookFullDto getById(long id) {

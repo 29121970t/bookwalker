@@ -14,7 +14,7 @@ import java.util.Optional;
 public class BookRepository {
   List<Book> books = new ArrayList<>();
 
-  {
+  public BookRepository() {
     books.add(Book.builder()
         .id(1)
         .name("Real time rendering")
@@ -39,7 +39,7 @@ public class BookRepository {
         .author("Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides")
         .pageCount(395)
         .publishDate(Date.valueOf(LocalDate.parse("1994-10-21")))
-        .publisher("Addison-Wesley Professional")
+        .publisher("Addison-Wesley Professional 1")
         .build());
 
     books.add(Book.builder()
@@ -48,7 +48,7 @@ public class BookRepository {
         .author("David Thomas, Andrew Hunt")
         .pageCount(352)
         .publishDate(Date.valueOf(LocalDate.parse("2019-07-30")))
-        .publisher("Addison-Wesley Professional")
+        .publisher("Addison-Wesley Professional pb")
         .build());
 
     books.add(Book.builder()
