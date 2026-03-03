@@ -10,6 +10,7 @@ import com.kruosant.bookwalker.services.BookService;
 import java.util.List;
 
 @RestController
+@RequestMapping("/book")
 public final class BookController {
   private final BookService service;
   private final BookMapper mapper;
@@ -19,24 +20,24 @@ public final class BookController {
     this.mapper = mapper;
   }
 
-  @GetMapping("/book/{id}")
+  @GetMapping("/{id}")
   public BookFullDto getById(@PathVariable Long id) {
     return service.getById(id);
   }
 
-  @GetMapping("/book")
+  @GetMapping("")
   public List<BookFullDto> getByName(@RequestParam String name) {
     return service.getAllByName(name);
   }
 
-  @GetMapping("/books")
+  @GetMapping("/all")
   public List<BookFullDto> getAll() {
     return service.getAll();
   }
 
-  @PostMapping("/book")
-  public BookFullDto addBook(@RequestBody BookCreateDto bookd) {
-    final Book book = mapper.toBook(bookd);
+  @PostMapping("")
+  public BookFullDto addBook(@RequestBody BookCreateDto bookDto) {
+    final Book book = mapper.toBook(bookDto);
     return service.create(book);
   }
 

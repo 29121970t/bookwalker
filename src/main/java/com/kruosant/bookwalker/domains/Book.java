@@ -1,15 +1,13 @@
 package com.kruosant.bookwalker.domains;
 
+import jakarta.persistence.*;
 import lombok.*;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 import java.util.Date;
 
 
 @Entity
+@Table(name = "Books")
 @Getter
 @Setter
 @NoArgsConstructor
