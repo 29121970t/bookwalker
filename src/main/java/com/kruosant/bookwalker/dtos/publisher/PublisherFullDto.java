@@ -1,7 +1,6 @@
 package com.kruosant.bookwalker.dtos.publisher;
 
 import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
-import com.kruosant.bookwalker.dtos.book.BookFullDto;
 import lombok.*;
 
 import java.util.List;

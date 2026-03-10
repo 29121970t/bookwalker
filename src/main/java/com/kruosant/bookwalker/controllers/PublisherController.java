@@ -1,9 +1,5 @@
 package com.kruosant.bookwalker.controllers;
 
-import com.kruosant.bookwalker.dtos.author.AuthorCreateDto;
-import com.kruosant.bookwalker.dtos.author.AuthorFullDto;
-import com.kruosant.bookwalker.dtos.author.AuthorPatchDto;
-import com.kruosant.bookwalker.dtos.author.AuthorPutDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherCreateDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherFullDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherPatchDto;
@@ -23,32 +19,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class PublisherController {
   private final PublisherService service;
-
-//  @GetMapping("/{id}")
-//  public PublisherFullDto getPublisherById(@PathVariable Long id) {
-//    return service.getAuthorById(id);
-//  }
-//
-//  @DeleteMapping("/{id}")
-//  public void deletePublisherById(@PathVariable Long id) {
-//    service.delete(id);
-//  }
-//
-//  @PatchMapping("/{id}")
-//  public PublisherFullDto patchPublisher(@PathVariable Long id, @RequestBody PublisherPatchDto dto) {
-//    return service.update(id, dto);
-//  }
-//
-//  @PostMapping("")
-//  public PublisherFullDto createPublisher(@RequestBody PublisherCreateDto dto) {
-//    return service.create(dto);
-//  }
-//
-//  @GetMapping("")
-//  public List<PublisherFullDto> getAll() {
-//    return service.getAll();
-//  }
-
 
   @GetMapping("")
   public List<PublisherFullDto> getAll() {

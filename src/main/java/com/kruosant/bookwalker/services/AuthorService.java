@@ -6,7 +6,6 @@ import com.kruosant.bookwalker.dtos.author.AuthorCreateDto;
 import com.kruosant.bookwalker.dtos.author.AuthorFullDto;
 import com.kruosant.bookwalker.dtos.author.AuthorPatchDto;
 import com.kruosant.bookwalker.dtos.author.AuthorPutDto;
-import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.AuthorMapper;
 import com.kruosant.bookwalker.repositories.AuthorRepository;

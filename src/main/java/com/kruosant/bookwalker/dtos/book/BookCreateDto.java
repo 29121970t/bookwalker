@@ -1,11 +1,9 @@
 package com.kruosant.bookwalker.dtos.book;
 
-import com.kruosant.bookwalker.dtos.author.AuthorBasicInfoDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Getter

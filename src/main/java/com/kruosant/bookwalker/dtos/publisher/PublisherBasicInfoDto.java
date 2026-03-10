@@ -1,9 +1,6 @@
 package com.kruosant.bookwalker.dtos.publisher;
 
-import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
 import lombok.*;
-
-import java.util.List;
 
 
 @Getter

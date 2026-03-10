@@ -1,7 +1,5 @@
 package com.kruosant.bookwalker.dtos.book;
 
-import com.kruosant.bookwalker.dtos.author.AuthorBasicInfoDto;
-import com.kruosant.bookwalker.dtos.publisher.PublisherBasicInfoDto;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

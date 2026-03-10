@@ -1,6 +1,5 @@
 package com.kruosant.bookwalker.dtos.author;
 
-import com.kruosant.bookwalker.dtos.book.BookFullDto;
 import jakarta.annotation.Nullable;
 import lombok.*;
 

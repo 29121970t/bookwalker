@@ -2,8 +2,6 @@ package com.kruosant.bookwalker.domains;
 
 import jakarta.persistence.*;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 @Table(name = "clients")
