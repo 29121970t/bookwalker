@@ -5,6 +5,8 @@ import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Publisher;
 import com.kruosant.bookwalker.dtos.book.BookCreateDto;
 import com.kruosant.bookwalker.dtos.book.BookFullDto;
+import com.kruosant.bookwalker.dtos.book.BookPatchDto;
+import com.kruosant.bookwalker.dtos.book.BookPutDto;
 import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
@@ -36,4 +38,7 @@ public abstract class BookMapper {
   public Publisher map(@NonNull Long id) {
     return publisherRepo.findById(id).orElseThrow(BadRequestException::new);
   }
+
+  public abstract BookPatchDto toPatchDto(BookPutDto dto);
+
 }

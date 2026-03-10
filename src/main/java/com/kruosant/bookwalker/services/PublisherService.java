@@ -55,19 +55,7 @@ public class PublisherService {
   }
 
   public PublisherFullDto update(Long id, PublisherPutDto dto) {
-    Publisher publisher = publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    if (dto.getBooks() != null) {
-      dto.getBooks().stream()
-          .map(book -> bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new))
-          .forEach(book -> {
-            book.setPublisher(publisher);
-            bookRepo.save(book);
-          });
-    }
-    if (dto.getName() != null) {
-      publisher.setName(dto.getName());
-    }
-    return mapper.toFullDto(publisherRepo.save(publisher));
+    return update(id, mapper.toPatchDto(dto));
   }
 
   public PublisherFullDto addBook(Long bookId, Long publisherId) {

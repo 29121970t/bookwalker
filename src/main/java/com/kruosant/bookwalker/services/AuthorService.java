@@ -60,23 +60,7 @@ public class AuthorService {
   }
 
   public AuthorFullDto update(Long id, AuthorPutDto dto) {
-    Author author = authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    if (dto.getBio() != null) {
-      author.setBio(dto.getBio());
-    }
-    if (dto.getBooks() != null) {
-      new ArrayList<>(author.getBooks()).forEach(b -> b.deleteAuthor(author));
-      dto.getBooks().stream()
-          .map(i -> bookRepo.findById(i).orElseThrow(ResourceNotFoundException::new))
-          .forEach(b -> {
-            b.addAuthor(author);
-            bookRepo.save(b);
-          });
-    }
-    if (dto.getName() != null) {
-      author.setName(dto.getName());
-    }
-    return mapper.toFullDto(authorRepo.save(author));
+    return update(id, mapper.toPatchDto(dto));
   }
 
   public AuthorFullDto addBook(Long bookId, Long authorId) {
