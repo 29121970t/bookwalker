@@ -1,4 +1,4 @@
-package com.kruosant.bookwalker.exceptions;
+package com.kruosant.bookwalker.responses;
 
 
 import java.time.LocalDateTime;
