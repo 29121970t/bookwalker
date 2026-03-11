@@ -9,7 +9,6 @@ import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.ClientMapper;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
-import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +21,6 @@ public class ClientService {
   private final ClientRepository clientRepo;
   private final OrderRepository orderRepo;
   private final ClientMapper mapper;
-  @Resource
-  private final ClientService service;
 
   public List<ClientFullDto> getAll() {
     return clientRepo.findAll().stream().map(mapper::toFullDto).toList();
@@ -58,6 +55,6 @@ public class ClientService {
 
   @Transactional
   public ClientFullDto update(Long id, ClientPutDto dto) {
-    return service.update(id, mapper.toPatchDto(dto));
+    return this.update(id, mapper.toPatchDto(dto));
   }
 }

@@ -10,7 +10,6 @@ import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.PublisherMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
-import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +23,6 @@ public class PublisherService {
   private final PublisherRepository publisherRepo;
   private final BookRepository bookRepo;
   private final PublisherMapper mapper;
-  @Resource
-  private final PublisherService service;
 
   public PublisherFullDto getAuthorById(Long id) {
     return mapper.toFullDto(publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new));
@@ -63,7 +60,7 @@ public class PublisherService {
 
   @Transactional
   public PublisherFullDto update(Long id, PublisherPutDto dto) {
-    return service.update(id, mapper.toPatchDto(dto));
+    return this.update(id, mapper.toPatchDto(dto));
   }
 
   @Transactional

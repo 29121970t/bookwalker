@@ -12,7 +12,6 @@ import com.kruosant.bookwalker.mappers.OrderMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
-import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +28,6 @@ public class OrderService {
   private final ClientRepository clientRepo;
   private final BookRepository bookRepo;
   private final OrderMapper mapper;
-  @Resource
-  private final OrderService service;
 
   public List<OrderFullDto> getAll() {
     return orderRepo.findAll().stream().map(mapper::toFullDto).toList();
@@ -79,6 +76,6 @@ public class OrderService {
 
   @Transactional
   public OrderFullDto update(Long id, OrderPutDto dto) {
-    return service.update(id, mapper.toPatchDto(dto));
+    return this.update(id, mapper.toPatchDto(dto));
   }
 }
