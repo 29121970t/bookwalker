@@ -12,7 +12,6 @@ import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class PublisherService {
     publisherRepo.delete(publisher);
   }
 
-  @Transactional
   public PublisherFullDto update(Long id, PublisherPatchDto dto) {
     Publisher publisher = publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
 
@@ -58,12 +56,10 @@ public class PublisherService {
     return mapper.toFullDto(publisherRepo.save(publisher));
   }
 
-  @Transactional
   public PublisherFullDto update(Long id, PublisherPutDto dto) {
-    return this.update(id, mapper.toPatchDto(dto));
+    return update(id, mapper.toPatchDto(dto));
   }
 
-  @Transactional
   public PublisherFullDto addBook(Long bookId, Long publisherId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Publisher publisher = publisherRepo.findById(publisherId)
@@ -75,7 +71,6 @@ public class PublisherService {
     return mapper.toFullDto(publisher);
   }
 
-  @Transactional
   public PublisherFullDto deleteBook(Long bookId, Long publisherId) {
     bookRepo.deleteById(bookId);
     return mapper.toFullDto(publisherRepo.findById(publisherId)

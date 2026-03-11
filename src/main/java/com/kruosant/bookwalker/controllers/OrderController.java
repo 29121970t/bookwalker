@@ -1,9 +1,6 @@
 package com.kruosant.bookwalker.controllers;
 
-import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
-import com.kruosant.bookwalker.dtos.order.OrderFullDto;
-import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
-import com.kruosant.bookwalker.dtos.order.OrderPutDto;
+import com.kruosant.bookwalker.dtos.order.*;
 import com.kruosant.bookwalker.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

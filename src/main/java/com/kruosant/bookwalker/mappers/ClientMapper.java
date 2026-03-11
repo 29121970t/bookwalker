@@ -2,10 +2,9 @@ package com.kruosant.bookwalker.mappers;
 
 
 import com.kruosant.bookwalker.domains.Client;
-import com.kruosant.bookwalker.dtos.client.ClientCreateDto;
-import com.kruosant.bookwalker.dtos.client.ClientFullDto;
-import com.kruosant.bookwalker.dtos.client.ClientPatchDto;
-import com.kruosant.bookwalker.dtos.client.ClientPutDto;
+
+import com.kruosant.bookwalker.dtos.client.*;
+
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

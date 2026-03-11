@@ -6,6 +6,7 @@ import com.kruosant.bookwalker.dtos.publisher.PublisherFullDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherPatchDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherPutDto;
 import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface PublisherMapper {

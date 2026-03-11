@@ -1,9 +1,6 @@
 package com.kruosant.bookwalker.controllers;
 
-import com.kruosant.bookwalker.dtos.client.ClientCreateDto;
-import com.kruosant.bookwalker.dtos.client.ClientFullDto;
-import com.kruosant.bookwalker.dtos.client.ClientPatchDto;
-import com.kruosant.bookwalker.dtos.client.ClientPutDto;
+import com.kruosant.bookwalker.dtos.client.*;
 import com.kruosant.bookwalker.services.ClientService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

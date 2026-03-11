@@ -37,8 +37,9 @@ public class BookService {
   private final PublisherRepository publisherRepo;
   private final OrderRepository orderRepo;
   private final BookMapper mapper;
+
   @Resource
-  private final BookService bookService;
+  private BookService serv;
 
   public List<BookFullDto> getAllByName(String name) {
     List<Book> books = bookRepo.findAllByName(name);
@@ -164,6 +165,6 @@ public class BookService {
 
   @Transactional
   public BookFullDto update(Long id, @NonNull BookPutDto dto) {
-    return bookService.update(id, mapper.toPatchDto(dto));
+    return update(id, mapper.toPatchDto(dto));
   }
 }

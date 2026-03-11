@@ -1,5 +1,6 @@
 package com.kruosant.bookwalker.dtos.order;
 
+import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
 import lombok.*;
 
