@@ -65,16 +65,23 @@ public class OrderService {
   @Transactional
   public OrderFullDto update(Long id, OrderPatchDto dto) {
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    if (dto.getBookIds() != null) {
+    if (dto.getBooks() != null) {
       Set<Book> books = new HashSet<>();
-      dto.getBookIds().forEach(bid -> books.add(bookRepo.findById(bid)
+      dto.getBooks().forEach(bid -> books.add(bookRepo.findById(bid)
           .orElseThrow(ResourceNotFoundException::new)));
       order.setBooks(books);
     }
     return mapper.toFullDto(orderRepo.save(order));
   }
 
+  @Transactional
   public OrderFullDto update(Long id, OrderPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    Set<Book> books = new HashSet<>();
+    dto.getBooks().forEach(bid -> books.add(bookRepo.findById(bid)
+        .orElseThrow(ResourceNotFoundException::new)));
+    order.setBooks(books);
+
+    return mapper.toFullDto(orderRepo.save(order));
   }
 }

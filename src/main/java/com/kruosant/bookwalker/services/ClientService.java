@@ -53,7 +53,10 @@ public class ClientService {
     return mapper.toFullDto(clientRepo.save(client));
   }
 
+  @Transactional
   public ClientFullDto update(Long id, ClientPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    Client client = clientRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    client.setUserName(dto.getUserName());
+    return mapper.toFullDto(clientRepo.save(client));
   }
 }

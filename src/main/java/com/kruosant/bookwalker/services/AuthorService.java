@@ -70,9 +70,24 @@ public class AuthorService {
     return mapper.toFullDto(authorRepo.save(author));
   }
 
-
+  @Transactional
   public AuthorFullDto update(Long id, AuthorPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    Author author = authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+
+
+    author.setBio(dto.getBio());
+
+    new ArrayList<>(author.getBooks()).forEach(b -> b.removeAuthor(author));
+    dto.getBooks().stream()
+        .map(i -> bookRepo.findById(i).orElseThrow(ResourceNotFoundException::new))
+        .forEach(b -> {
+          b.addAuthor(author);
+          bookRepo.save(b);
+        });
+
+    author.setName(dto.getName());
+
+    return mapper.toFullDto(authorRepo.save(author));
   }
 
   @Transactional
@@ -85,7 +100,7 @@ public class AuthorService {
     return mapper.toFullDto(author);
   }
 
-
+  @Transactional
   public AuthorFullDto deleteBook(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);

@@ -10,5 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class OrderPatchDto {
-  private List<Long> bookIds;
+  private List<Long> books;
 }

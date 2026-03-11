@@ -16,7 +16,6 @@ import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
-import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
@@ -80,20 +79,21 @@ public class BookService {
     for (Order order : ordersContainingBook) {
       order.getBooks().remove(book);
     }
-
     book.getPublisher().getBooks().remove(book);
-
-
     book.getAuthors().forEach(author -> author.getBooks().remove(book));
-
-
     bookRepo.delete(book);
   }
 
   @Transactional
   public void deleteById(Long id) {
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    deleteBook(book);
+    List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
+    for (Order order : ordersContainingBook) {
+      order.getBooks().remove(book);
+    }
+    book.getPublisher().getBooks().remove(book);
+    book.getAuthors().forEach(author -> author.getBooks().remove(book));
+    bookRepo.delete(book);
   }
 
   @Transactional
@@ -112,7 +112,13 @@ public class BookService {
 
     book.removeAuthor(author);
     if (book.getAuthors().isEmpty()) {
-      deleteBook(book);
+      List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
+      for (Order order : ordersContainingBook) {
+        order.getBooks().remove(book);
+      }
+      book.getPublisher().getBooks().remove(book);
+      book.getAuthors().forEach(auth -> auth.getBooks().remove(book));
+      bookRepo.delete(book);
     }
     return mapper.toFullDto(bookRepo.save(book));
   }
