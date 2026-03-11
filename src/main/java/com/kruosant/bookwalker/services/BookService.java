@@ -21,10 +21,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -92,7 +89,7 @@ public class BookService {
       order.getBooks().remove(book);
     }
     book.getPublisher().getBooks().remove(book);
-    book.getAuthors().forEach(author -> author.getBooks().remove(book));
+    new ArrayList<>(book.getAuthors()).forEach(author -> author.getBooks().remove(book));
     bookRepo.delete(book);
   }
 
@@ -179,6 +176,7 @@ public class BookService {
         .collect(Collectors.toCollection(HashSet::new));
 
     book.setAuthors(authors);
+    bookRepo.save(book);
 
     Publisher publisher = publisherRepo.findById(dto.getPublisher())
         .orElseThrow(BadRequestException::new);
@@ -192,5 +190,6 @@ public class BookService {
 
     book.setPrice(dto.getPrice());
     return mapper.toFullDto(bookRepo.save(book));
+
   }
 }
