@@ -16,6 +16,7 @@ import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
+import jakarta.annotation.Resource;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class BookService {
   private final PublisherRepository publisherRepo;
   private final OrderRepository orderRepo;
   private final BookMapper mapper;
+  @Resource
+  private final BookService bookService;
 
   public List<BookFullDto> getAllByName(String name) {
     List<Book> books = bookRepo.findAllByName(name);
@@ -161,6 +164,6 @@ public class BookService {
 
   @Transactional
   public BookFullDto update(Long id, @NonNull BookPutDto dto) {
-    return this.update(id, mapper.toPatchDto(dto));
+    return bookService.update(id, mapper.toPatchDto(dto));
   }
 }
