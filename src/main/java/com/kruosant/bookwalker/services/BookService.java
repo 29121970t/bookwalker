@@ -167,7 +167,30 @@ public class BookService {
     return mapper.toFullDto(bookRepo.save(book));
   }
 
+  @Transactional
   public BookFullDto update(Long id, @NonNull BookPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    if (dto.getAuthors().isEmpty()) {
+      throw new BadRequestException();
+    }
+    Set<Author> authors = dto.getAuthors().stream()
+        .map(authorId -> authorRepo.findById(authorId)
+            .orElseThrow(BadRequestException::new))
+        .collect(Collectors.toCollection(HashSet::new));
+
+    book.setAuthors(authors);
+
+    Publisher publisher = publisherRepo.findById(dto.getPublisher())
+        .orElseThrow(BadRequestException::new);
+    book.setPublisher(publisher);
+
+    book.setName(dto.getName());
+
+    book.setPageCount(dto.getPageCount());
+
+    book.setPublishDate(dto.getPublishDate());
+
+    book.setPrice(dto.getPrice());
+    return mapper.toFullDto(bookRepo.save(book));
   }
 }
