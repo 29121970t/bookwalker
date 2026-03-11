@@ -25,7 +25,7 @@ public class PublisherService {
   private final BookRepository bookRepo;
   private final PublisherMapper mapper;
   @Resource
-  private final PublisherService publisherService;
+  private final PublisherService service;
 
   public PublisherFullDto getAuthorById(Long id) {
     return mapper.toFullDto(publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new));
@@ -63,7 +63,7 @@ public class PublisherService {
 
   @Transactional
   public PublisherFullDto update(Long id, PublisherPutDto dto) {
-    return publisherService.update(id, mapper.toPatchDto(dto));
+    return service.update(id, mapper.toPatchDto(dto));
   }
 
   @Transactional

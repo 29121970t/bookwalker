@@ -23,7 +23,7 @@ public class ClientService {
   private final OrderRepository orderRepo;
   private final ClientMapper mapper;
   @Resource
-  private final ClientService clientService;
+  private final ClientService service;
 
   public List<ClientFullDto> getAll() {
     return clientRepo.findAll().stream().map(mapper::toFullDto).toList();
@@ -58,6 +58,6 @@ public class ClientService {
 
   @Transactional
   public ClientFullDto update(Long id, ClientPutDto dto) {
-    return clientService.update(id, mapper.toPatchDto(dto));
+    return service.update(id, mapper.toPatchDto(dto));
   }
 }

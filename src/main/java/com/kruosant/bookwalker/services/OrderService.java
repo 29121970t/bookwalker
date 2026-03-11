@@ -30,7 +30,7 @@ public class OrderService {
   private final BookRepository bookRepo;
   private final OrderMapper mapper;
   @Resource
-  private final OrderService orderService;
+  private final OrderService service;
 
   public List<OrderFullDto> getAll() {
     return orderRepo.findAll().stream().map(mapper::toFullDto).toList();
@@ -79,6 +79,6 @@ public class OrderService {
 
   @Transactional
   public OrderFullDto update(Long id, OrderPutDto dto) {
-    return orderService.update(id, mapper.toPatchDto(dto));
+    return service.update(id, mapper.toPatchDto(dto));
   }
 }
