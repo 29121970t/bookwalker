@@ -161,6 +161,6 @@ public class BookService {
 
   @Transactional
   public BookFullDto update(Long id, @NonNull BookPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    return this.update(id, mapper.toPatchDto(dto));
   }
 }

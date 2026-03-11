@@ -1,14 +1,17 @@
 package com.kruosant.bookwalker.services;
 
 import com.kruosant.bookwalker.domains.Client;
-
-import com.kruosant.bookwalker.dtos.client.*;
+import com.kruosant.bookwalker.dtos.client.ClientCreateDto;
+import com.kruosant.bookwalker.dtos.client.ClientFullDto;
+import com.kruosant.bookwalker.dtos.client.ClientPatchDto;
+import com.kruosant.bookwalker.dtos.client.ClientPutDto;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.ClientMapper;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,16 +31,19 @@ public class ClientService {
     return mapper.toFullDto(client);
   }
 
+  @Transactional
   public ClientFullDto create(ClientCreateDto dto) {
     return mapper.toFullDto(clientRepo.save(mapper.toClient(dto)));
   }
 
+  @Transactional
   public void delete(Long id) {
     Client client = clientRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     client.getOrders().forEach(orderRepo::delete);
     clientRepo.delete(client);
   }
 
+  @Transactional
   public ClientFullDto update(Long id, ClientPatchDto dto) {
     Client client = clientRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     if (dto.getUserName() != null) {
@@ -47,7 +53,8 @@ public class ClientService {
     return mapper.toFullDto(clientRepo.save(client));
   }
 
+  @Transactional
   public ClientFullDto update(Long id, ClientPutDto dto) {
-    return update(id, mapper.toPatchDto(dto));
+    return this.update(id, mapper.toPatchDto(dto));
   }
 }
