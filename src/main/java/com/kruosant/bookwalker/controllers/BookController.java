@@ -53,7 +53,9 @@ public final class BookController {
 
   //author endpoints
   @PostMapping("/{bookId}/authors/{authorId}")
-  public BookFullDto addAuthor(@PathVariable(name = "bookId") Long bookId, @PathVariable(name = "authorId") Long authorId) {
+  public BookFullDto addAuthor(
+      @PathVariable(name = "bookId") Long bookId,
+      @PathVariable(name = "authorId") Long authorId) {
     return service.addAuthor(bookId, authorId);
   }
 
@@ -66,18 +68,24 @@ public final class BookController {
   }
 
   @DeleteMapping("/{bookId}/authors/{authorId}")
-  public BookFullDto deleteAuthor(@PathVariable(name = "bookId") Long bookId, @PathVariable(name = "authorId") Long authorId) {
+  public BookFullDto deleteAuthor(
+      @PathVariable(name = "bookId") Long bookId,
+      @PathVariable(name = "authorId") Long authorId) {
     return service.deleteAuthor(bookId, authorId);
   }
 
   //publisher endpoints
   @PostMapping("/{bookId}/publisher/{publisherId}")
-  public BookFullDto setPublisher(@PathVariable(name = "bookId") Long bookId, @PathVariable(name = "publisherId") Long publisherId) {
+  public BookFullDto setPublisher(
+      @PathVariable(name = "bookId") Long bookId,
+      @PathVariable(name = "publisherId") Long publisherId) {
     return service.setPublisher(bookId, publisherId);
   }
 
   @PostMapping("/{id}/publisher")
-  public BookFullDto setPublisher(@PathVariable Long id, @RequestBody @Valid Map<String, Long> body) {
+  public BookFullDto setPublisher(
+      @PathVariable Long id,
+      @RequestBody @Valid Map<String, Long> body) {
     if (!body.containsKey("publisher")) {
       throw new BadRequestException();
     }

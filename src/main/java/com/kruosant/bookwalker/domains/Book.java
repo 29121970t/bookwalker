@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -14,13 +15,20 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NamedEntityGraph(
+    name = "Book.authors.publisher",
+    attributeNodes = {
+        @NamedAttributeNode("authors"),
+        @NamedAttributeNode("publisher")
+    }
+)
 public class Book {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
   private String name;
 
-  @ManyToMany
+  @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinTable(
       name = "book_author",
       joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id"),
@@ -28,11 +36,12 @@ public class Book {
   private Set<Author> authors;
   private Long pageCount;
   private LocalDate publishDate;
-  @ManyToOne
+
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
   private Publisher publisher;
   private Double price;
 
-  public void setAuthors(Set<Author> newAuthors) {
+  public void setAuthors(Collection<Author> newAuthors) {
     authors.clear();
     authors.addAll(newAuthors);
     authors.forEach(a -> a.getBooks().add(this));
@@ -43,14 +52,19 @@ public class Book {
     author.getBooks().add(this);
   }
 
-  public void deleteAuthor(Author author) {
+  public void removeAuthor(Author author) {
     authors.remove(author);
     author.getBooks().remove(this);
   }
 
   public void setPublisher(Publisher newPublisher) {
+    if (publisher != null) {
+      publisher.getBooks().remove(this);
+    }
     publisher = newPublisher;
-    publisher.getBooks().add(this);
+    if (newPublisher != null) {
+      newPublisher.getBooks().add(this);
+    }
   }
 
 }

@@ -3,6 +3,7 @@ package com.kruosant.bookwalker.services;
 
 import com.kruosant.bookwalker.domains.Author;
 import com.kruosant.bookwalker.domains.Book;
+import com.kruosant.bookwalker.domains.Order;
 import com.kruosant.bookwalker.domains.Publisher;
 import com.kruosant.bookwalker.dtos.book.BookCreateDto;
 import com.kruosant.bookwalker.dtos.book.BookFullDto;
@@ -13,10 +14,12 @@ import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.BookMapper;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.BookRepository;
+import com.kruosant.bookwalker.repositories.OrderRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +34,7 @@ public class BookService {
   private final BookRepository bookRepo;
   private final AuthorRepository authorRepo;
   private final PublisherRepository publisherRepo;
+  private final OrderRepository orderRepo;
   private final BookMapper mapper;
 
   public List<BookFullDto> getAllByName(String name) {
@@ -50,21 +54,47 @@ public class BookService {
     return mapper.toFullDto(optionalBook.get());
   }
 
+  @Transactional
   public BookFullDto create(BookCreateDto dto) {
-    return mapper.toFullDto(bookRepo.save(mapper.toEntity(dto)));
+    List<Author> authors = dto.getAuthors().stream()
+        .map(id -> authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new))
+        .toList();
+    Publisher publisher = publisherRepo.findById(dto.getPublisher())
+        .orElseThrow(ResourceNotFoundException::new);
+
+    Book newBook = mapper.toEntity(dto);
+    newBook.setPublisher(publisher);
+    newBook.setAuthors(authors);
+    return mapper.toFullDto(bookRepo.save(newBook));
   }
 
   public List<BookFullDto> getAll() {
     return bookRepo.findAll().stream().map(mapper::toFullDto).toList();
   }
 
-  public void deleteById(Long id) {
-    if (!bookRepo.existsById(id)) {
-      throw new ResourceNotFoundException();
+  @Transactional
+  public void deleteBook(Book book) {
+    List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
+    for (Order order : ordersContainingBook) {
+      order.getBooks().remove(book);
     }
-    bookRepo.deleteById(id);
+
+    book.getPublisher().getBooks().remove(book);
+
+
+    book.getAuthors().forEach(author -> author.getBooks().remove(book));
+
+
+    bookRepo.delete(book);
   }
 
+  @Transactional
+  public void deleteById(Long id) {
+    Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    deleteBook(book);
+  }
+
+  @Transactional
   public BookFullDto addAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
@@ -73,28 +103,39 @@ public class BookService {
     return mapper.toFullDto(bookRepo.save(book));
   }
 
+  @Transactional
   public BookFullDto deleteAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
 
-    book.deleteAuthor(author);
+    book.removeAuthor(author);
+    if (book.getAuthors().isEmpty()) {
+      deleteBook(book);
+    }
     return mapper.toFullDto(bookRepo.save(book));
   }
 
+  @Transactional
   public BookFullDto setPublisher(Long bookId, Long publisherId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
-    Publisher publisher = publisherRepo.findById(publisherId).orElseThrow(ResourceNotFoundException::new);
+    Publisher publisher = publisherRepo.findById(publisherId)
+        .orElseThrow(ResourceNotFoundException::new);
 
     book.setPublisher(publisher);
     return mapper.toFullDto(bookRepo.save(book));
   }
 
+  @Transactional
   public BookFullDto update(Long id, @NonNull BookPatchDto dto) {
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     if (dto.getAuthors() != null) {
+      if (dto.getAuthors().isEmpty()) {
+        throw new BadRequestException();
+      }
       Set<Author> authors = dto.getAuthors().stream()
           .map(authorId -> authorRepo.findById(authorId)
-              .orElseThrow(BadRequestException::new)).collect(Collectors.toCollection(HashSet::new));
+              .orElseThrow(BadRequestException::new))
+          .collect(Collectors.toCollection(HashSet::new));
 
       book.setAuthors(authors);
     }
@@ -118,6 +159,7 @@ public class BookService {
     return mapper.toFullDto(bookRepo.save(book));
   }
 
+  @Transactional
   public BookFullDto update(Long id, @NonNull BookPutDto dto) {
     return update(id, mapper.toPatchDto(dto));
   }

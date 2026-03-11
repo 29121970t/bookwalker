@@ -1,11 +1,16 @@
 package com.kruosant.bookwalker.domains;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Table(name = "clients")
 @Entity
+@Getter
+@Setter
 public class Client {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,7 +19,16 @@ public class Client {
   private String userName;
   private String password;
 
-  @OneToMany(mappedBy = "client")
-  private Set<Order> orders;
+  @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<Order> orders = new HashSet<>();
 
+  public void addOrder(Order order) {
+    orders.add(order);
+    order.setClient(this);
+  }
+
+  public void removeOrder(Order order) {
+    orders.remove(order);
+    order.setClient(null);
+  }
 }

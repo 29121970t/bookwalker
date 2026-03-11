@@ -53,7 +53,9 @@ public final class AuthorController {
 
   //books endpoints
   @PostMapping("/{authorId}/books/{bookId}")
-  public AuthorFullDto addBook(@PathVariable(name = "authorId") Long authorId, @PathVariable(name = "bookId") Long bookId) {
+  public AuthorFullDto addBook(
+      @PathVariable(name = "authorId") Long authorId,
+      @PathVariable(name = "bookId") Long bookId) {
     return service.addBook(bookId, authorId);
   }
 
@@ -66,7 +68,9 @@ public final class AuthorController {
   }
 
   @DeleteMapping("/{authorId}/books/{bookId}")
-  public AuthorFullDto deleteBook(@PathVariable(name = "authorId") Long authorId, @PathVariable(name = "bookId") Long bookId) {
+  public AuthorFullDto deleteBook(
+      @PathVariable(name = "authorId") Long authorId,
+      @PathVariable(name = "bookId") Long bookId) {
     return service.deleteBook(bookId, authorId);
   }
 

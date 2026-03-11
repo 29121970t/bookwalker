@@ -10,10 +10,13 @@ import com.kruosant.bookwalker.dtos.book.BookPutDto;
 import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,8 +25,13 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class BookMapper {
+  @Autowired
   protected AuthorRepository authorRepo;
+  @Autowired
   protected PublisherRepository publisherRepo;
+
+
+
 
   @Mapping(target = "id", ignore = true)
   public abstract Book toEntity(BookCreateDto dto);

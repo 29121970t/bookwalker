@@ -13,6 +13,7 @@ import com.kruosant.bookwalker.repositories.PublisherRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -35,18 +36,19 @@ public class PublisherService {
   }
 
   public void delete(Long id) {
-    publisherRepo.delete(publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new));
+    Publisher publisher = publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    publisherRepo.delete(publisher);
   }
 
   public PublisherFullDto update(Long id, PublisherPatchDto dto) {
     Publisher publisher = publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+
     if (dto.getBooks() != null) {
+
+      new ArrayList<>(publisher.getBooks()).forEach(b -> b.setPublisher(null));
       dto.getBooks().stream()
-          .map(book -> bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new))
-          .forEach(book -> {
-            book.setPublisher(publisher);
-            bookRepo.save(book);
-          });
+          .map(bookId -> bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new))
+          .forEach(publisher::addBook);
     }
     if (dto.getName() != null) {
       publisher.setName(dto.getName());
@@ -60,7 +62,8 @@ public class PublisherService {
 
   public PublisherFullDto addBook(Long bookId, Long publisherId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
-    Publisher publisher = publisherRepo.findById(publisherId).orElseThrow(ResourceNotFoundException::new);
+    Publisher publisher = publisherRepo.findById(publisherId)
+        .orElseThrow(ResourceNotFoundException::new);
 
     book.setPublisher(publisher);
     bookRepo.save(book);
@@ -70,6 +73,7 @@ public class PublisherService {
 
   public PublisherFullDto deleteBook(Long bookId, Long publisherId) {
     bookRepo.deleteById(bookId);
-    return mapper.toFullDto(publisherRepo.findById(publisherId).orElseThrow(ResourceNotFoundException::new));
+    return mapper.toFullDto(publisherRepo.findById(publisherId)
+        .orElseThrow(ResourceNotFoundException::new));
   }
 }

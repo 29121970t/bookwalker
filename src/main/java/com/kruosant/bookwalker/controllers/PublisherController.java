@@ -53,12 +53,16 @@ public class PublisherController {
 
   //books endpoints
   @PostMapping("/{publisherId}/books/{bookId}")
-  public PublisherFullDto addBook(@PathVariable(name = "publisherId") Long publisherId, @PathVariable(name = "bookId") Long bookId) {
+  public PublisherFullDto addBook(
+      @PathVariable(name = "publisherId") Long publisherId,
+      @PathVariable(name = "bookId") Long bookId) {
     return service.addBook(bookId, publisherId);
   }
 
   @PostMapping("/{id}/books")
-  public PublisherFullDto addBook(@PathVariable Long id, @RequestBody @Valid Map<String, Long> body) {
+  public PublisherFullDto addBook(
+      @PathVariable Long id,
+      @RequestBody @Valid Map<String, Long> body) {
     if (!body.containsKey("book")) {
       throw new BadRequestException();
     }
@@ -66,7 +70,9 @@ public class PublisherController {
   }
 
   @DeleteMapping("/{publisherId}/books/{bookId}")
-  public PublisherFullDto deleteBook(@PathVariable(name = "publisherId") Long publisherId, @PathVariable(name = "bookId") Long bookId) {
+  public PublisherFullDto deleteBook(
+      @PathVariable(name = "publisherId") Long publisherId,
+      @PathVariable(name = "bookId") Long bookId) {
     return service.deleteBook(bookId, publisherId);
   }
 }
