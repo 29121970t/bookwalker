@@ -30,7 +30,7 @@ public class PublisherService {
     return mapper.toFullDto(publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new));
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public PublisherFullDto create(PublisherCreateDto dto) {
     return mapper.toFullDto(publisherRepo.save(mapper.toAuthor(dto)));
   }

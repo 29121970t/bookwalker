@@ -34,6 +34,6 @@ public interface AuthorMapper {
   Author toAuthor(AuthorPutDto dto);
 
   default Set<Book> map(Set<Long> value) {
-    return HashSet.newHashSet(0);
+    return HashSet.newHashSet(16);
   }
 }

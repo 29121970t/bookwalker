@@ -7,6 +7,8 @@ import com.kruosant.bookwalker.dtos.order.OrderPutDto;
 import com.kruosant.bookwalker.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,11 @@ public class OrderController {
   @GetMapping("")
   public List<OrderFullDto> getAll() {
     return service.getAll();
+  }
+
+  @GetMapping("/search")
+  public Page<OrderFullDto> search(@RequestParam(name = "authorSurname") String authorSurname, Pageable p) {
+    return service.getOrdersWithBooksOf(authorSurname, p);
   }
 
   @GetMapping("/{id}")

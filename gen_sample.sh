@@ -1,245 +1,156 @@
 #!/bin/bash
 
 # ----------------------------------------------------------------------
-#  Sample Data Populator for Bookwalker API
-# ----------------------------------------------------------------------
-# This script creates authors, publishers, books, clients, and orders.
-# It assumes the API is running at http://localhost:8080 and that 'jq'
-# is installed for JSON parsing.
+#  Expanded Sample Data Populator for Bookwalker API (200 entries per entity)
 # ----------------------------------------------------------------------
 
-set -e  # Exit on any error
+set -e
 
 BASE_URL="http://localhost:8080"
 
-# Check if jq is installed
 if ! command -v jq &> /dev/null; then
-    echo "Error: jq is not installed. Please install jq to run this script."
+    echo "Error: jq is not installed."
     exit 1
 fi
 
-echo "=== Starting population of sample data ==="
+echo "=== Starting population of 200 records per entity ==="
 
 # ----------------------------------------------------------------------
-# 1. Create Publishers
+# 1. Создание Издателей (200 записей)
 # ----------------------------------------------------------------------
 echo "Creating publishers..."
 publisher_ids=()
-
-create_publisher() {
-    local name="$1"
-    response=$(curl -s -X POST "$BASE_URL/publishers" \
-        -H "Content-Type: application/json" \
-        -d "{\"name\": \"$name\"}")
+for i in {1..200}; do
+    name="Publisher $i"
+    response=$(curl -s -X POST "$BASE_URL/publishers" -H "Content-Type: application/json" -d "{\"name\": \"$name\"}")
     id=$(echo "$response" | jq -r '.id')
-    if [ "$id" = "null" ] || [ -z "$id" ]; then
-        echo "Failed to create publisher: $name"
-        echo "Response: $response"
-        exit 1
-    fi
     publisher_ids+=("$id")
-    echo "  Created publisher '$name' with ID $id"
-}
-
-create_publisher "Penguin Random House"
-create_publisher "HarperCollins"
-create_publisher "Simon & Schuster"
-create_publisher "Hachette Book Group"
-create_publisher "Macmillan Publishers"
-
-echo ""
+    if (( i % 20 == 0 )); then
+        echo "  Created $i publishers (latest ID: $id)"
+    fi
+done
+echo "  Total publishers created: ${#publisher_ids[@]}"
 
 # ----------------------------------------------------------------------
-# 2. Create Authors (at least 10)
+# 2. Создание Авторов (200 записей)
 # ----------------------------------------------------------------------
-echo "Creating authors..."
+echo -e "\nCreating authors..."
+# Списки имён и фамилий для комбинаций
+first_names=(
+    "James" "Mary" "John" "Patricia" "Robert" "Jennifer" "Michael" "Linda" "William" "Elizabeth"
+    "David" "Barbara" "Richard" "Susan" "Joseph" "Jessica" "Thomas" "Sarah" "Charles" "Karen"
+)
+surnames=(
+    "Smith" "Johnson" "Williams" "Brown" "Jones" "Garcia" "Miller" "Davis" "Rodriguez" "Martinez"
+    "Hernandez" "Lopez" "Gonzalez" "Wilson" "Anderson" "Thomas" "Taylor" "Moore" "Jackson" "Martin"
+)
+
 author_ids=()
+for i in {1..200}; do
+    first_idx=$(( (i-1) % ${#first_names[@]} ))
+    last_idx=$(( (i-1) % ${#surnames[@]} ))
+    first="${first_names[$first_idx]}"
+    surname="${surnames[$last_idx]}"
+    bio="Author bio for $first $surname (ID $i)"
 
-create_author() {
-    local first="$1"
-    local middle="$2"
-    local last="$3"
-    local bio="$4"
     response=$(curl -s -X POST "$BASE_URL/authors" \
         -H "Content-Type: application/json" \
-        -d "{
-            \"name\": \"$first\",
-            \"middleName\": \"$middle\",
-            \"surname\": \"$last\",
-            \"bio\": \"$bio\"
-        }")
+        -d "{\"name\": \"$first\", \"middleName\": \"\", \"surname\": \"$surname\", \"bio\": \"$bio\"}")
     id=$(echo "$response" | jq -r '.id')
-    if [ "$id" = "null" ] || [ -z "$id" ]; then
-        echo "Failed to create author: $first $last"
-        echo "Response: $response"
-        exit 1
-    fi
     author_ids+=("$id")
-    echo "  Created author '$first $last' with ID $id"
-}
-
-create_author "George" "R.R." "Martin" "American novelist, known for A Song of Ice and Fire."
-create_author "J.K." "" "Rowling" "British author, creator of Harry Potter."
-create_author "Dan" "" "Brown" "American author of thrillers like The Da Vinci Code."
-create_author "Stephen" "Edwin" "King" "American author of horror, supernatural fiction, and fantasy."
-create_author "Agatha" "" "Christie" "English writer known for her detective novels."
-create_author "Isaac" "" "Asimov" "American writer and professor of biochemistry, famous for science fiction."
-create_author "Jane" "" "Austen" "English novelist known for Pride and Prejudice."
-create_author "Ernest" "Miller" "Hemingway" "American journalist and novelist, Nobel Prize winner."
-create_author "Gabriel" "José" "García Márquez" "Colombian novelist, Nobel Prize winner, pioneer of magical realism."
-create_author "Toni" "" "Morrison" "American novelist, editor, and professor, Nobel Prize winner."
-create_author "Haruki" "" "Murakami" "Japanese writer, known for Kafka on the Shore and Norwegian Wood."
-create_author "Philip" "Kindred" "Dick" "American science fiction writer, influenced Blade Runner."
-
-echo ""
+    if (( i % 20 == 0 )); then
+        echo "  Created $i authors (latest: $first $surname, ID: $id)"
+    fi
+done
+echo "  Total authors created: ${#author_ids[@]}"
 
 # ----------------------------------------------------------------------
-# 3. Create Books (at least 10)
+# 3. Создание Книг (200 записей)
 # ----------------------------------------------------------------------
-echo "Creating books..."
+echo -e "\nCreating books..."
 book_ids=()
+for i in {1..200}; do
+    # Случайный издатель
+    p_id=${publisher_ids[$(( RANDOM % ${#publisher_ids[@]} ))]}
 
-create_book() {
-    local name="$1"
-    local authors_ref="$2"      # JSON array of author IDs
-    local page_count="$3"
-    local publish_date="$4"
-    local publisher_id="$5"
-    local price="$6"
+    # Количество авторов: 1 (70%) или 2-3 (30%)
+    if [ $(( RANDOM % 10 )) -lt 7 ]; then
+        auth_count=1
+    else
+        auth_count=$(( RANDOM % 2 + 2 ))
+    fi
+
+    # Выбор уникальных авторов
+    random_auth_json=$(printf "%s\n" "${author_ids[@]}" | shuf -n "$auth_count" | jq -R . | jq -s -c .)
+
+    # Случайные характеристики книги
+    title="Book Title $i"
+    page_count=$(( RANDOM % 900 + 100 ))           # от 100 до 999
+    year=$(( RANDOM % 26 + 2000 ))                 # от 2000 до 2025
+    publish_date="$year-01-01"
+    price=$(printf "%.2f" "$(echo "scale=2; $RANDOM/1000 + 5" | bc)")
 
     response=$(curl -s -X POST "$BASE_URL/books" \
         -H "Content-Type: application/json" \
         -d "{
-            \"name\": \"$name\",
-            \"authors\": $authors_ref,
+            \"name\": \"$title\",
+            \"authors\": $random_auth_json,
             \"pageCount\": $page_count,
             \"publishDate\": \"$publish_date\",
-            \"publisher\": $publisher_id,
+            \"publisher\": $p_id,
             \"price\": $price
         }")
+
     id=$(echo "$response" | jq -r '.id')
-    if [ "$id" = "null" ] || [ -z "$id" ]; then
-        echo "Failed to create book: $name"
-        echo "Response: $response"
-        exit 1
+    if [ "$id" != "null" ] && [ -n "$id" ]; then
+        book_ids+=("$id")
+        if (( i % 20 == 0 )); then
+            echo "  Created $i books (latest: '$title' with $auth_count author(s), ID: $id)"
+        fi
+    else
+        echo "  Failed to create book: $title. Response: $response"
     fi
-    book_ids+=("$id")
-    echo "  Created book '$name' with ID $id"
-}
-
-# Helper to pick random publisher ID from the list
-random_publisher() {
-    local idx=$(( RANDOM % ${#publisher_ids[@]} ))
-    echo "${publisher_ids[$idx]}"
-}
-
-# Helper to create a JSON array with one random author (or two)
-random_author_array() {
-    local count=${1:-1}   # number of authors, default 1
-    local idx
-    local -a selected=()
-    for ((i=0; i<count; i++)); do
-        idx=$(( RANDOM % ${#author_ids[@]} ))
-        selected+=("${author_ids[$idx]}")
-    done
-    # Remove duplicates by sorting unique (simple approach)
-    # For simplicity we just output the array as is, but duplicates are fine.
-    printf '%s\n' "${selected[@]}" | jq -R . | jq -s -c .
-}
-
-# Create books
-# We'll use specific titles for clarity
-create_book "A Game of Thrones" "$(random_author_array 1)" 694 "1996-08-06" "$(random_publisher)" 9.99
-create_book "Harry Potter and the Philosopher's Stone" "$(random_author_array 1)" 223 "1997-06-26" "$(random_publisher)" 12.99
-create_book "The Da Vinci Code" "$(random_author_array 1)" 489 "2003-03-18" "$(random_publisher)" 14.95
-create_book "The Shining" "$(random_author_array 1)" 447 "1977-01-28" "$(random_publisher)" 11.50
-create_book "Murder on the Orient Express" "$(random_author_array 1)" 256 "1934-01-01" "$(random_publisher)" 8.99
-create_book "Foundation" "$(random_author_array 1)" 255 "1951-06-01" "$(random_publisher)" 10.99
-create_book "Pride and Prejudice" "$(random_author_array 1)" 279 "1813-01-28" "$(random_publisher)" 7.99
-create_book "The Old Man and the Sea" "$(random_author_array 1)" 127 "1952-09-01" "$(random_publisher)" 6.99
-create_book "One Hundred Years of Solitude" "$(random_author_array 1)" 417 "1967-06-05" "$(random_publisher)" 13.50
-create_book "Beloved" "$(random_author_array 1)" 324 "1987-09-02" "$(random_publisher)" 12.00
-create_book "Kafka on the Shore" "$(random_author_array 1)" 505 "2002-09-12" "$(random_publisher)" 15.00
-create_book "Do Androids Dream of Electric Sheep?" "$(random_author_array 1)" 210 "1968-01-01" "$(random_publisher)" 9.50
-
-echo ""
+done
+echo "  Total books created: ${#book_ids[@]}"
 
 # ----------------------------------------------------------------------
-# 4. Create Clients
+# 4. Создание Клиентов (200 записей)
 # ----------------------------------------------------------------------
-echo "Creating clients..."
+echo -e "\nCreating clients..."
 client_ids=()
-
-create_client() {
-    local username="$1"
-    local password="$2"
+for i in {1..200}; do
+    username="user_$i"
+    password="pass$i"
     response=$(curl -s -X POST "$BASE_URL/clients" \
         -H "Content-Type: application/json" \
-        -d "{
-            \"userName\": \"$username\",
-            \"password\": \"$password\"
-        }")
+        -d "{\"userName\": \"$username\", \"password\": \"$password\"}")
     id=$(echo "$response" | jq -r '.id')
-    if [ "$id" = "null" ] || [ -z "$id" ]; then
-        echo "Failed to create client: $username"
-        echo "Response: $response"
-        exit 1
-    fi
     client_ids+=("$id")
-    echo "  Created client '$username' with ID $id"
-}
-
-create_client "alice_wonder" "alice123"
-create_client "bob_reader" "bobPass!"
-create_client "charlie_bookworm" "charlie456"
-
-echo ""
-
-# ----------------------------------------------------------------------
-# 5. Create Orders
-# ----------------------------------------------------------------------
-echo "Creating orders..."
-
-create_order() {
-    local client_id="$1"
-    local books_array="$2"   # JSON array of book IDs
-    response=$(curl -s -X POST "$BASE_URL/orders" \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"client\": $client_id,
-            \"books\": $books_array
-        }")
-    id=$(echo "$response" | jq -r '.id')
-    if [ "$id" = "null" ] || [ -z "$id" ]; then
-        echo "Failed to create order for client $client_id"
-        echo "Response: $response"
-        exit 1
+    if (( i % 20 == 0 )); then
+        echo "  Created $i clients (latest: $username, ID: $id)"
     fi
-    echo "  Created order with ID $id"
-}
+done
+echo "  Total clients created: ${#client_ids[@]}"
 
-# Helper to pick a random subset of book IDs as JSON array
-random_books_array() {
-    local count=${1:-2}   # number of books to pick, default 2
-    local idx
-    local -a selected=()
-    for ((i=0; i<count; i++)); do
-        idx=$(( RANDOM % ${#book_ids[@]} ))
-        selected+=("${book_ids[$idx]}")
-    done
-    printf '%s\n' "${selected[@]}" | jq -R . | jq -s -c .
-}
+# ----------------------------------------------------------------------
+# 5. Создание Заказов (200 записей)
+# ----------------------------------------------------------------------
+echo -e "\nCreating orders..."
+for i in {1..200}; do
+    # Случайный клиент
+    c_id=${client_ids[$(( RANDOM % ${#client_ids[@]} ))]}
+    # Случайное количество книг от 1 до 3
+    b_count=$(( RANDOM % 3 + 1 ))
+    b_array=$(printf '%s\n' "${book_ids[@]}" | shuf -n "$b_count" | jq -R . | jq -s -c .)
 
-# Create a few orders
-create_order "${client_ids[0]}" "$(random_books_array 2)"   # Alice buys 2 random books
-create_order "${client_ids[0]}" "$(random_books_array 1)"   # Alice buys another 1
-create_order "${client_ids[1]}" "$(random_books_array 3)"   # Bob buys 3 random books
-create_order "${client_ids[2]}" "$(random_books_array 2)"   # Charlie buys 2 random books
+    curl -s -X POST "$BASE_URL/orders" \
+        -H "Content-Type: application/json" \
+        -d "{\"client\": $c_id, \"books\": $b_array}" > /dev/null
 
-echo ""
-echo "=== Data population completed successfully ==="
-echo "Summary:"
-echo "  Publishers: ${#publisher_ids[@]}"
-echo "  Authors:    ${#author_ids[@]}"
-echo "  Books:      ${#book_ids[@]}"
-echo "  Clients:    ${#client_ids[@]}"
+    if (( i % 20 == 0 )); then
+        echo "  Created $i orders (latest for client ID $c_id with $b_count books)"
+    fi
+done
+echo "  Total orders created: 200"
+
+echo -e "\n=== Data population completed successfully ==="

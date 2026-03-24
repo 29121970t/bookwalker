@@ -1,5 +1,6 @@
 package com.kruosant.bookwalker.services;
 
+import com.kruosant.bookwalker.cashe.OrderSearchCache;
 import com.kruosant.bookwalker.domains.Author;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.dtos.author.AuthorCreateDto;
@@ -25,6 +26,7 @@ public class AuthorService {
   private final BookService bookService;
   private final AuthorMapper mapper;
   private final BookRepository bookRepo;
+  private final OrderSearchCache cache;
 
   @Transactional(readOnly = true)
   public Author getById(Long id) {
@@ -38,12 +40,14 @@ public class AuthorService {
 
   @Transactional
   public AuthorFullDto create(AuthorCreateDto dto) {
+    cache.invalidate();
     Author author = mapper.toAuthor(dto);
     return mapper.toFullDto(authorRepo.save(author));
   }
 
   @Transactional
   public Author create(AuthorPutDto dto) {
+    cache.invalidate();
     List<Book> books = dto.getBooks().stream().map(id -> bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new)).toList();
     Author newAuthor =  mapper.toAuthor(dto);
     newAuthor.getBooks().addAll(books);
@@ -57,6 +61,7 @@ public class AuthorService {
 
   @Transactional
   public void delete(Long id) {
+    cache.invalidate();
     Author author = authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     new HashSet<>(author.getBooks()).forEach(book -> bookService.removeAuthor(book, author));
     authorRepo.delete(author);
@@ -64,6 +69,7 @@ public class AuthorService {
 
   @Transactional
   public AuthorFullDto patch(Long id, AuthorPatchDto dto) {
+    cache.invalidate();
     Author author = authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     new ArrayList<>(author.getBooks()).forEach(book -> bookService.removeAuthor(book, author));
     mapper.patch(author, dto);
@@ -75,6 +81,7 @@ public class AuthorService {
 
   @Transactional
   public AuthorFullDto put(Long id, AuthorPutDto dto) {
+    cache.invalidate();
     Author author = authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     new ArrayList<>(author.getBooks()).forEach(book -> bookService.removeAuthor(book, author));
     mapper.put(author, dto);
@@ -86,6 +93,7 @@ public class AuthorService {
 
   @Transactional
   public AuthorFullDto addBook(Long bookId, Long authorId) {
+    cache.invalidate();
     bookService.addAuthor(bookId, authorId);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
     return mapper.toFullDto(author);
@@ -93,6 +101,7 @@ public class AuthorService {
 
   @Transactional
   public AuthorFullDto deleteBook(Long bookId, Long authorId) {
+    cache.invalidate();
     bookService.removeAuthor(bookId, authorId);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
     return mapper.toFullDto(author);

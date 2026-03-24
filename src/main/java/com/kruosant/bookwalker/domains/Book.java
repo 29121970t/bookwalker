@@ -27,7 +27,7 @@ public class Book {
   private long id;
   private String name;
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinTable(
       name = "book_author",
       joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id"),

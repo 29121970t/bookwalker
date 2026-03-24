@@ -30,8 +30,7 @@ public class Publisher {
   @OneToMany(
       cascade = CascadeType.ALL,
       mappedBy = "publisher",
-      orphanRemoval = true,
-      fetch = FetchType.EAGER
+      orphanRemoval = true
   )
   private Set<Book> books = HashSet.newHashSet(0);
 

@@ -1,6 +1,7 @@
 package com.kruosant.bookwalker.services;
 
 
+import com.kruosant.bookwalker.cashe.OrderSearchCache;
 import com.kruosant.bookwalker.domains.Author;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Order;
@@ -32,6 +33,8 @@ public class BookService {
   private final PublisherRepository publisherRepo;
   private final OrderRepository orderRepository;
   private final BookMapper bookMapper;
+  private final OrderSearchCache cache;
+
 
   public void removeAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
@@ -40,6 +43,7 @@ public class BookService {
   }
 
   public void removeAuthor(Book book, Author author) {
+    cache.invalidate();
     book.getAuthors().remove(author);
     author.getBooks().remove(book);
     if (book.getAuthors().isEmpty()) {
@@ -52,6 +56,7 @@ public class BookService {
 
 
   public void setAuthors(Book book, Collection<Author> newAuthors) {
+    cache.invalidate();
     Collection<Author> bookAuthors = book.getAuthors();
     bookAuthors.forEach(author -> author.getBooks().remove(book));
     bookAuthors.clear();
@@ -91,7 +96,7 @@ public class BookService {
 
   @Transactional
   public BookFullDto create(BookCreateDto dto) {
-
+    cache.invalidate();
     List<Author> authors = authorRepo.findAllById(dto.getAuthors());
     Optional<Publisher> publisherOpt = publisherRepo.findById(dto.getPublisher());
 
@@ -113,6 +118,7 @@ public class BookService {
 
 
   public void deleteBook(Book book) {
+    cache.invalidate();
     List<Order> orders = orderRepository.findByBooksContaining(book);
     for (Order order : orders) {
       order.getBooks().remove(book);
@@ -153,6 +159,7 @@ public class BookService {
 
   @Transactional
   public BookFullDto patch(Long id, @NonNull BookPatchDto dto) {
+    cache.invalidate();
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     bookMapper.updateBook(book, dto);
     if (dto.getPublisher() != null) {
@@ -166,8 +173,15 @@ public class BookService {
 
   @Transactional
   public BookFullDto put(Long id, @NonNull BookPutDto dto) {
+    cache.invalidate();
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     bookMapper.updateBook(book, dto);
+    if (dto.getPublisher() != null) {
+      setPublisher(id, dto.getPublisher());
+    }
+    if (dto.getAuthors() != null) {
+      setAuthors(id, dto.getAuthors());
+    }
     return bookMapper.toFullDto(bookRepo.save(book));
   }
 }

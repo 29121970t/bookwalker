@@ -15,6 +15,7 @@ import lombok.NonNull;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 
 import java.util.HashSet;
 import java.util.List;

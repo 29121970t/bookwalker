@@ -1,5 +1,7 @@
 package com.kruosant.bookwalker.services;
 
+import com.kruosant.bookwalker.cashe.OrderSearchCache;
+import com.kruosant.bookwalker.cashe.OrderSearchCacheKey;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Client;
 import com.kruosant.bookwalker.domains.Order;
@@ -13,12 +15,16 @@ import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -28,6 +34,7 @@ public class OrderService {
   private final ClientRepository clientRepo;
   private final BookRepository bookRepo;
   private final OrderMapper mapper;
+  private final OrderSearchCache cache;
 
   @Transactional(readOnly = true)
   public List<OrderFullDto> getAll() {
@@ -40,8 +47,21 @@ public class OrderService {
     return mapper.toFullDto(order);
   }
 
+  @Transactional(readOnly = true)
+  public Page<OrderFullDto> getOrdersWithBooksOf(String surname, Pageable p) {
+    OrderSearchCacheKey key = OrderSearchCacheKey.create(surname, p);
+    Optional<Page<Order>> pageOpt = cache.get(key);
+    if (pageOpt.isPresent()) {
+      return pageOpt.get().map(mapper::toFullDto);
+    }
+    Page<Order> newRequest = orderRepo.findByAuthorSurnameNative(surname, p);
+    cache.save(key, newRequest);
+    return newRequest.map(mapper::toFullDto);
+  }
+
   @Transactional
   public OrderFullDto create(OrderCreateDto dto) {
+    cache.invalidate();
     Client client = clientRepo.findById(dto.getClient())
         .orElseThrow(ResourceNotFoundException::new);
     Set<Book> books = new HashSet<>();
@@ -60,12 +80,14 @@ public class OrderService {
 
   @Transactional
   public void delete(Long id) {
+    cache.invalidate();
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     orderRepo.delete(order);
   }
 
   @Transactional
   public OrderFullDto update(Long id, OrderPatchDto dto) {
+    cache.invalidate();
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     if (dto.getBooks() != null) {
       Set<Book> books = new HashSet<>();
@@ -78,6 +100,7 @@ public class OrderService {
 
   @Transactional
   public OrderFullDto update(Long id, OrderPutDto dto) {
+    cache.invalidate();
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     Set<Book> books = new HashSet<>();
     dto.getBooks().forEach(bid -> books.add(bookRepo.findById(bid)
