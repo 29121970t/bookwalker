@@ -6,7 +6,10 @@ import com.kruosant.bookwalker.dtos.author.AuthorCreateDto;
 import com.kruosant.bookwalker.dtos.author.AuthorFullDto;
 import com.kruosant.bookwalker.dtos.author.AuthorPatchDto;
 import com.kruosant.bookwalker.dtos.author.AuthorPutDto;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.HashSet;
 import java.util.Set;

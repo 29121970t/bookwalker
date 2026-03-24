@@ -2,8 +2,6 @@ package com.kruosant.bookwalker.dtos.order;
 
 import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
 import com.kruosant.bookwalker.dtos.client.ClientBasicInfoDto;
-import jakarta.persistence.Column;
-import jakarta.persistence.Table;
 import lombok.*;
 
 import java.time.LocalDateTime;

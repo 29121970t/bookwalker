@@ -3,7 +3,6 @@ package com.kruosant.bookwalker.dtos.author;
 import jakarta.annotation.Nullable;
 import lombok.*;
 
-import java.util.List;
 import java.util.Set;
 
 

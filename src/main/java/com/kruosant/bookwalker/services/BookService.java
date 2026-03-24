@@ -33,7 +33,6 @@ public class BookService {
   private final OrderRepository orderRepository;
   private final BookMapper bookMapper;
 
-  @Transactional
   public void removeAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
@@ -59,7 +58,6 @@ public class BookService {
     bookAuthors.addAll(newAuthors);
   }
 
-  @Transactional
   public void setAuthors(Long bookId, Collection<Long> authorIds) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     List<Author> newAuthors = authorIds.stream()

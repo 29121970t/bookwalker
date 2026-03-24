@@ -1,21 +1,14 @@
 package com.kruosant.bookwalker.mappers;
 
-import com.kruosant.bookwalker.domains.Author;
 import com.kruosant.bookwalker.domains.Book;
-import com.kruosant.bookwalker.domains.Client;
-import com.kruosant.bookwalker.domains.Publisher;
-import com.kruosant.bookwalker.dtos.book.*;
-import com.kruosant.bookwalker.exceptions.BadRequestException;
-import com.kruosant.bookwalker.repositories.AuthorRepository;
-import com.kruosant.bookwalker.repositories.PublisherRepository;
-import lombok.NonNull;
+import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
+import com.kruosant.bookwalker.dtos.book.BookFullDto;
+import com.kruosant.bookwalker.dtos.book.BookPatchDto;
+import com.kruosant.bookwalker.dtos.book.BookPutDto;
 import org.mapstruct.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)

@@ -1,9 +1,6 @@
 package com.kruosant.bookwalker.dtos.author;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
