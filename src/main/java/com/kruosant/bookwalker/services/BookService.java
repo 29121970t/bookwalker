@@ -149,7 +149,6 @@ public class BookService {
     return bookMapper.toFullDto(bookRepo.save(book));
   }
 
-  @Transactional
   public BookFullDto setPublisher(Long bookId, Long publisherId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Publisher publisher = publisherRepo.findById(publisherId).orElseThrow(ResourceNotFoundException::new);

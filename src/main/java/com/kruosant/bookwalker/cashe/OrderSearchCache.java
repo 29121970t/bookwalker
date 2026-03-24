@@ -1,7 +1,6 @@
 package com.kruosant.bookwalker.cashe;
 
 import com.kruosant.bookwalker.domains.Order;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

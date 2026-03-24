@@ -16,10 +16,9 @@ import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
