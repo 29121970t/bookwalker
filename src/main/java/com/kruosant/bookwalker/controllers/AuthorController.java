@@ -22,7 +22,7 @@ public final class AuthorController {
 
   @GetMapping("")
   public List<AuthorFullDto> getAll() {
-    return service.getAll();
+    return service.getAllFullDto();
   }
 
   @ResponseStatus(code = HttpStatus.CREATED)
@@ -33,7 +33,7 @@ public final class AuthorController {
 
   @GetMapping("/{id}")
   public AuthorFullDto getById(@PathVariable Long id) {
-    return service.getAuthorById(id);
+    return service.getFullDtoById(id);
   }
 
   @DeleteMapping("/{id}")
@@ -43,12 +43,12 @@ public final class AuthorController {
 
   @PatchMapping("/{id}")
   public AuthorFullDto patch(@PathVariable Long id, @RequestBody AuthorPatchDto dto) {
-    return service.update(id, dto);
+    return service.patch(id, dto);
   }
 
   @PutMapping("/{id}")
-  public AuthorFullDto patch(@PathVariable Long id, @RequestBody @Valid AuthorPutDto dto) {
-    return service.update(id, dto);
+  public AuthorFullDto put(@PathVariable Long id, @RequestBody @Valid AuthorPutDto dto) {
+    return service.put(id, dto);
   }
 
   //books endpoints
@@ -64,7 +64,7 @@ public final class AuthorController {
     if (!body.containsKey("book")) {
       throw new BadRequestException();
     }
-    return service.addBook(id, body.get("book"));
+    return service.addBook(body.get("book"), id);
   }
 
   @DeleteMapping("/{authorId}/books/{bookId}")

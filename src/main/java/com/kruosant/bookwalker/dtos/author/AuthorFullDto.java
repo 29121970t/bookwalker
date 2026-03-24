@@ -14,6 +14,8 @@ import java.util.List;
 public class AuthorFullDto {
   private Long id;
   private String name;
+  private String middleName;
+  private String surname;
   private String bio;
   private List<BookBasicInfoDto> books = new ArrayList<>();
 }

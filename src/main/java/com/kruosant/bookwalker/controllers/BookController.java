@@ -43,12 +43,12 @@ public final class BookController {
 
   @PatchMapping("/{id}")
   public BookFullDto patch(@PathVariable Long id, @RequestBody BookPatchDto dto) {
-    return service.update(id, dto);
+    return service.patch(id, dto);
   }
 
   @PutMapping("/{id}")
-  public BookFullDto patch(@PathVariable Long id, @RequestBody @Valid BookPutDto dto) {
-    return service.update(id, dto);
+  public BookFullDto put(@PathVariable Long id, @RequestBody @Valid BookPutDto dto) {
+    return service.put(id, dto);
   }
 
   //author endpoints
@@ -68,10 +68,10 @@ public final class BookController {
   }
 
   @DeleteMapping("/{bookId}/authors/{authorId}")
-  public BookFullDto deleteAuthor(
+  public void deleteAuthor(
       @PathVariable(name = "bookId") Long bookId,
       @PathVariable(name = "authorId") Long authorId) {
-    return service.deleteAuthor(bookId, authorId);
+    service.deleteAuthor(bookId, authorId);
   }
 
   //publisher endpoints

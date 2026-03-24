@@ -3,10 +3,7 @@ package com.kruosant.bookwalker.services;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Client;
 import com.kruosant.bookwalker.domains.Order;
-import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
-import com.kruosant.bookwalker.dtos.order.OrderFullDto;
-import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
-import com.kruosant.bookwalker.dtos.order.OrderPutDto;
+import com.kruosant.bookwalker.dtos.order.*;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.OrderMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
@@ -29,10 +26,12 @@ public class OrderService {
   private final BookRepository bookRepo;
   private final OrderMapper mapper;
 
+  @Transactional(readOnly = true)
   public List<OrderFullDto> getAll() {
     return orderRepo.findAll().stream().map(mapper::toFullDto).toList();
   }
 
+  @Transactional(readOnly = true)
   public OrderFullDto getById(Long id) {
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     return mapper.toFullDto(order);
@@ -52,7 +51,7 @@ public class OrderService {
     Order order = new Order();
     order.setClient(client);
     order.setBooks(books);
-    order.setTimeStamp(LocalDateTime.now());
+    order.setDate(LocalDateTime.now());
     return mapper.toFullDto(orderRepo.save(order));
   }
 

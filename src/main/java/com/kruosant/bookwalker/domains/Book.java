@@ -12,9 +12,9 @@ import java.util.Set;
 @Table(name = "books")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@NoArgsConstructor
 @NamedEntityGraph(
     name = "Book.authors.publisher",
     attributeNodes = {
@@ -32,7 +32,8 @@ public class Book {
   @JoinTable(
       name = "book_author",
       joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "author_id", referencedColumnName = "id"))
+      inverseJoinColumns = @JoinColumn(name = "author_id", referencedColumnName = "id")
+  )
   private Set<Author> authors;
   private Long pageCount;
   private LocalDate publishDate;
@@ -41,30 +42,5 @@ public class Book {
   private Publisher publisher;
   private Double price;
 
-  public void setAuthors(Collection<Author> newAuthors) {
-    authors.clear();
-    authors.addAll(newAuthors);
-    authors.forEach(a -> a.getBooks().add(this));
-  }
-
-  public void addAuthor(Author author) {
-    authors.add(author);
-    author.getBooks().add(this);
-  }
-
-  public void removeAuthor(Author author) {
-    authors.remove(author);
-    author.getBooks().remove(this);
-  }
-
-  public void setPublisher(Publisher newPublisher) {
-    if (publisher != null) {
-      publisher.getBooks().remove(this);
-    }
-    publisher = newPublisher;
-    if (newPublisher != null) {
-      newPublisher.getBooks().add(this);
-    }
-  }
 
 }

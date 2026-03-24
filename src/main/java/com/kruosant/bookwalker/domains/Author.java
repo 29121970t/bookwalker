@@ -24,21 +24,13 @@ public class Author {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
-  private String name;
-  private String bio;
+  private String name = "";
+  private String middleName = "";
+  private String surname = "";
+  private String bio = "";
 
-  @ManyToMany(mappedBy = "authors", fetch = FetchType.EAGER)
+  @ManyToMany(mappedBy = "authors", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @Builder.Default
   private Set<Book> books = new HashSet<>();
 
-  public void addBook(Book book) {
-    book.addAuthor(this);
-  }
-
-  public void removeBook(Book book) {
-    book.removeAuthor(this);
-  }
-
-  public void removeAllBooks() {
-    new ArrayList<>(books).forEach(book -> book.removeAuthor(this));
-  }
 }

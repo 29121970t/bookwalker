@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -17,7 +18,11 @@ public class AuthorPatchDto {
   @Nullable
   private String name;
   @Nullable
+  private String middleName;
+  @Nullable
+  private String surname;
+  @Nullable
   private String bio;
   @Nullable
-  private List<Long> books;
+  private Set<Long> books;
 }

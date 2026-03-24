@@ -4,6 +4,7 @@ package com.kruosant.bookwalker.dtos.order;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -16,4 +17,5 @@ public class OrderCreateDto {
   private Long client;
   @NotNull
   private List<Long> books;
+  private LocalDateTime date;
 }

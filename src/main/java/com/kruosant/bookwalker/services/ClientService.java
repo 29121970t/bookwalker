@@ -22,10 +22,12 @@ public class ClientService {
   private final OrderRepository orderRepo;
   private final ClientMapper mapper;
 
+  @Transactional(readOnly = true)
   public List<ClientFullDto> getAll() {
     return clientRepo.findAll().stream().map(mapper::toFullDto).toList();
   }
 
+  @Transactional(readOnly = true)
   public ClientFullDto getById(Long id) {
     Client client = clientRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     return mapper.toFullDto(client);

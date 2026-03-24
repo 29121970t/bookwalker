@@ -11,6 +11,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   @EntityGraph(attributePaths = {"books", "client"})
   List<Order> findAll();
 
+  List<Order> findByBooksContaining(Book book);
+
   List<Order> findAllByBooksContains(Book book);
 }
 

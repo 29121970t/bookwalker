@@ -1,9 +1,11 @@
 package com.kruosant.bookwalker.dtos.author;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -12,11 +14,13 @@ import java.util.List;
 @Builder
 public class AuthorPutDto {
   @NotNull
-  private Long id;
-  @NotNull
   private String name;
+  @NotNull
+  private String middleName;
+  @NotNull
+  private String surname;
   @NotNull
   private String bio;
   @NotNull
-  private List<Long> books;
+  private Set<Long> books;
 }

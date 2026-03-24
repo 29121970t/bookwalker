@@ -9,7 +9,6 @@ import com.kruosant.bookwalker.dtos.book.BookCreateDto;
 import com.kruosant.bookwalker.dtos.book.BookFullDto;
 import com.kruosant.bookwalker.dtos.book.BookPatchDto;
 import com.kruosant.bookwalker.dtos.book.BookPutDto;
-import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.BookMapper;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
@@ -31,165 +30,146 @@ public class BookService {
   private final BookRepository bookRepo;
   private final AuthorRepository authorRepo;
   private final PublisherRepository publisherRepo;
-  private final OrderRepository orderRepo;
-  private final BookMapper mapper;
+  private final OrderRepository orderRepository;
+  private final BookMapper bookMapper;
 
-
-  public List<BookFullDto> getAllByName(String name) {
-    List<Book> books = bookRepo.findAllByName(name);
-    if (books.isEmpty()) {
-      throw new ResourceNotFoundException();
-    }
-
-    return books.stream().map(mapper::toFullDto).toList();
+  @Transactional
+  public void removeAuthor(Long bookId, Long authorId) {
+    Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
+    Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
+    removeAuthor(book, author);
   }
 
-  public BookFullDto getById(long id) {
-    Optional<Book> optionalBook = bookRepo.findById(id);
-    if (optionalBook.isEmpty()) {
-      throw new ResourceNotFoundException();
+  public void removeAuthor(Book book, Author author) {
+    book.getAuthors().remove(author);
+    author.getBooks().remove(book);
+    if (book.getAuthors().isEmpty()) {
+      deleteBook(book);
+    } else {
+      bookRepo.save(book);
     }
-    return mapper.toFullDto(optionalBook.get());
+    authorRepo.save(author);
+  }
+
+
+  public void setAuthors(Book book, Collection<Author> newAuthors) {
+    Collection<Author> bookAuthors = book.getAuthors();
+    bookAuthors.forEach(author -> author.getBooks().remove(book));
+    bookAuthors.clear();
+    bookAuthors.addAll(newAuthors);
+  }
+
+  @Transactional
+  public void setAuthors(Long bookId, Collection<Long> authorIds) {
+    Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
+    List<Author> newAuthors = authorIds.stream()
+        .map(id -> authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new))
+        .collect(Collectors.toCollection(ArrayList::new));
+    setAuthors(book, newAuthors);
+  }
+
+  public void setPublisher(Book book, Publisher publisher) {
+    book.getPublisher().getBooks().remove(book);
+    book.setPublisher(publisher);
+    publisher.getBooks().add(book);
+  }
+
+  @Transactional(readOnly = true)
+  public List<BookFullDto> getAllByName(String name) {
+    List<Book> books = bookRepo.findAllByName(name);
+    return bookMapper.toFullDto(books);
+  }
+
+  @Transactional(readOnly = true)
+  public BookFullDto getById(long id) {
+    Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+    return bookMapper.toFullDto(book);
+  }
+
+  @Transactional(readOnly = true)
+  public List<BookFullDto> getAll() {
+    return bookRepo.findAll().stream().map(bookMapper::toFullDto).toList();
   }
 
   @Transactional
   public BookFullDto create(BookCreateDto dto) {
-    List<Author> authors = dto.getAuthors().stream()
-        .map(id -> authorRepo.findById(id).orElseThrow(ResourceNotFoundException::new))
-        .toList();
-    Publisher publisher = publisherRepo.findById(dto.getPublisher())
-        .orElseThrow(ResourceNotFoundException::new);
 
-    Book newBook = mapper.toEntity(dto);
-    newBook.setPublisher(publisher);
-    newBook.setAuthors(authors);
-    return mapper.toFullDto(bookRepo.save(newBook));
+    List<Author> authors = authorRepo.findAllById(dto.getAuthors());
+    Optional<Publisher> publisherOpt = publisherRepo.findById(dto.getPublisher());
+
+    if (authors.size() != dto.getAuthors().size() || publisherOpt.isEmpty()) {
+      throw new ResourceNotFoundException();
+    }
+
+    Book newBook = new Book(
+        0,
+        dto.getName(),
+        new HashSet<>(authors),
+        dto.getPageCount(),
+        dto.getPublishDate(),
+        publisherOpt.get(),
+        dto.getPrice()
+    );
+    return bookMapper.toFullDto(bookRepo.save(newBook));
   }
 
-  public List<BookFullDto> getAll() {
-    return bookRepo.findAll().stream().map(mapper::toFullDto).toList();
-  }
 
-  @Transactional
   public void deleteBook(Book book) {
-    List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
-    for (Order order : ordersContainingBook) {
+    List<Order> orders = orderRepository.findByBooksContaining(book);
+    for (Order order : orders) {
       order.getBooks().remove(book);
     }
-    book.getPublisher().getBooks().remove(book);
-    book.getAuthors().forEach(author -> author.getBooks().remove(book));
     bookRepo.delete(book);
   }
 
   @Transactional
   public void deleteById(Long id) {
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
-    for (Order order : ordersContainingBook) {
-      order.getBooks().remove(book);
-    }
-    book.getPublisher().getBooks().remove(book);
-    new ArrayList<>(book.getAuthors()).forEach(author -> author.getBooks().remove(book));
-    bookRepo.delete(book);
+    deleteBook(book);
   }
 
   @Transactional
   public BookFullDto addAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
-
-    book.addAuthor(author);
-    return mapper.toFullDto(bookRepo.save(book));
+    book.getAuthors().add(author);
+    author.getBooks().add(book);
+    return bookMapper.toFullDto(bookRepo.save(book));
   }
 
   @Transactional
   public BookFullDto deleteAuthor(Long bookId, Long authorId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
     Author author = authorRepo.findById(authorId).orElseThrow(ResourceNotFoundException::new);
-
-    book.removeAuthor(author);
-    if (book.getAuthors().isEmpty()) {
-      List<Order> ordersContainingBook = orderRepo.findAllByBooksContains(book);
-      for (Order order : ordersContainingBook) {
-        order.getBooks().remove(book);
-      }
-      book.getPublisher().getBooks().remove(book);
-      book.getAuthors().forEach(auth -> auth.getBooks().remove(book));
-      bookRepo.delete(book);
-    }
-    return mapper.toFullDto(bookRepo.save(book));
+    removeAuthor(book, author);
+    return bookMapper.toFullDto(bookRepo.save(book));
   }
 
   @Transactional
   public BookFullDto setPublisher(Long bookId, Long publisherId) {
     Book book = bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
-    Publisher publisher = publisherRepo.findById(publisherId)
-        .orElseThrow(ResourceNotFoundException::new);
-
-    book.setPublisher(publisher);
-    return mapper.toFullDto(bookRepo.save(book));
+    Publisher publisher = publisherRepo.findById(publisherId).orElseThrow(ResourceNotFoundException::new);
+    setPublisher(book, publisher);
+    return bookMapper.toFullDto(bookRepo.save(book));
   }
 
   @Transactional
-  public BookFullDto update(Long id, @NonNull BookPatchDto dto) {
+  public BookFullDto patch(Long id, @NonNull BookPatchDto dto) {
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    if (dto.getAuthors() != null) {
-      if (dto.getAuthors().isEmpty()) {
-        throw new BadRequestException();
-      }
-      Set<Author> authors = dto.getAuthors().stream()
-          .map(authorId -> authorRepo.findById(authorId)
-              .orElseThrow(BadRequestException::new))
-          .collect(Collectors.toCollection(HashSet::new));
-
-      book.setAuthors(authors);
-    }
+    bookMapper.updateBook(book, dto);
     if (dto.getPublisher() != null) {
-      Publisher publisher = publisherRepo.findById(dto.getPublisher())
-          .orElseThrow(BadRequestException::new);
-      book.setPublisher(publisher);
+      setPublisher(id, dto.getPublisher());
     }
-    if (dto.getName() != null) {
-      book.setName(dto.getName());
+    if (dto.getAuthors() != null) {
+      setAuthors(id, dto.getAuthors());
     }
-    if (dto.getPageCount() != null) {
-      book.setPageCount(dto.getPageCount());
-    }
-    if (dto.getPublishDate() != null) {
-      book.setPublishDate(dto.getPublishDate());
-    }
-    if (dto.getPrice() != null) {
-      book.setPrice(dto.getPrice());
-    }
-    return mapper.toFullDto(bookRepo.save(book));
+    return bookMapper.toFullDto(bookRepo.save(book));
   }
 
   @Transactional
-  public BookFullDto update(Long id, @NonNull BookPutDto dto) {
+  public BookFullDto put(Long id, @NonNull BookPutDto dto) {
     Book book = bookRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    if (dto.getAuthors().isEmpty()) {
-      throw new BadRequestException();
-    }
-    Set<Author> authors = dto.getAuthors().stream()
-        .map(authorId -> authorRepo.findById(authorId)
-            .orElseThrow(BadRequestException::new))
-        .collect(Collectors.toCollection(HashSet::new));
-
-    book.setAuthors(authors);
-    bookRepo.save(book);
-
-    Publisher publisher = publisherRepo.findById(dto.getPublisher())
-        .orElseThrow(BadRequestException::new);
-    book.setPublisher(publisher);
-
-    book.setName(dto.getName());
-
-    book.setPageCount(dto.getPageCount());
-
-    book.setPublishDate(dto.getPublishDate());
-
-    book.setPrice(dto.getPrice());
-    return mapper.toFullDto(bookRepo.save(book));
-
+    bookMapper.updateBook(book, dto);
+    return bookMapper.toFullDto(bookRepo.save(book));
   }
 }

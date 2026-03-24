@@ -21,14 +21,4 @@ public class Client {
 
   @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<Order> orders = new HashSet<>();
-
-  public void addOrder(Order order) {
-    orders.add(order);
-    order.setClient(this);
-  }
-
-  public void removeOrder(Order order) {
-    orders.remove(order);
-    order.setClient(null);
-  }
 }

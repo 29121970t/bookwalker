@@ -21,18 +21,21 @@ import java.util.List;
 @AllArgsConstructor
 public class PublisherService {
   private final PublisherRepository publisherRepo;
+  private final BookService bookService;
   private final BookRepository bookRepo;
   private final PublisherMapper mapper;
 
+  @Transactional(readOnly = true)
   public PublisherFullDto getAuthorById(Long id) {
     return mapper.toFullDto(publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new));
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
   public PublisherFullDto create(PublisherCreateDto dto) {
     return mapper.toFullDto(publisherRepo.save(mapper.toAuthor(dto)));
   }
 
+  @Transactional(readOnly = true)
   public List<PublisherFullDto> getAll() {
     return publisherRepo.findAll().stream().map(mapper::toFullDto).toList();
   }
@@ -40,6 +43,7 @@ public class PublisherService {
   @Transactional
   public void delete(Long id) {
     Publisher publisher = publisherRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
+
     publisherRepo.delete(publisher);
   }
 
@@ -52,7 +56,7 @@ public class PublisherService {
       new ArrayList<>(publisher.getBooks()).forEach(b -> b.setPublisher(null));
       dto.getBooks().stream()
           .map(bookId -> bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new))
-          .forEach(publisher::addBook);
+          .forEach(book -> bookService.setPublisher(book, publisher));
     }
     if (dto.getName() != null) {
       publisher.setName(dto.getName());
@@ -67,7 +71,7 @@ public class PublisherService {
     new ArrayList<>(publisher.getBooks()).forEach(b -> b.setPublisher(null));
     dto.getBooks().stream()
         .map(bookId -> bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new))
-        .forEach(publisher::addBook);
+        .forEach(book -> bookService.setPublisher(book, publisher));
 
     publisher.setName(dto.getName());
 

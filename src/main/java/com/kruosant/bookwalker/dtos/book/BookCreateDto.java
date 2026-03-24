@@ -15,14 +15,14 @@ public class BookCreateDto {
   @NotNull
   private String name;
   @NotNull
-  private Set<Long> authors; //rename to author_ids?
+  private Set<Long> authors;
   @NotNull
   private Long pageCount;
   @NotNull
   private LocalDate publishDate;
   @NotNull
   private Long publisher;
-  @NotNull(message = "No price provided")
+  @NotNull
   private Double price;
 
 }

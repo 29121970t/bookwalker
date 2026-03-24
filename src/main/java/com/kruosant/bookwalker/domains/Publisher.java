@@ -29,18 +29,10 @@ public class Publisher {
 
   @OneToMany(
       cascade = CascadeType.ALL,
-      mappedBy = "publisher", orphanRemoval = true,
+      mappedBy = "publisher",
+      orphanRemoval = true,
       fetch = FetchType.EAGER
   )
   private Set<Book> books = HashSet.newHashSet(0);
 
-  public void addBook(Book book) {
-    books.add(book);
-    book.setPublisher(this);
-  }
-
-  public void removeBook(Book book) {
-    books.remove(book);
-    book.setPublisher(null);
-  }
 }

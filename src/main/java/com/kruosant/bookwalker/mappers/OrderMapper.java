@@ -27,7 +27,8 @@ public abstract class OrderMapper {
   private BookRepository bookRepo;
   @Autowired
   private ClientRepository clientRepo;
-
+  @Autowired
+  private ClientMapper clientMapper;
 
   public abstract Order toOrder(OrderCreateDto dto);
 
@@ -43,4 +44,5 @@ public abstract class OrderMapper {
   public Client map(Long client) throws BadRequestException {
     return clientRepo.findById(client).orElseThrow(BadRequestException::new);
   }
+
 }

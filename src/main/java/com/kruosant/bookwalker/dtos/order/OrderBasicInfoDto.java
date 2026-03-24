@@ -13,6 +13,6 @@ import java.util.Set;
 @Builder
 public class OrderBasicInfoDto {
   private Long id;
-  private LocalDateTime timeStamp;
+  private LocalDateTime date;
   private Set<BookBasicInfoDto> books;
 }

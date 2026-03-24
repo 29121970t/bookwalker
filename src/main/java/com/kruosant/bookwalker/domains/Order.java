@@ -17,12 +17,11 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Setter
   @ManyToOne(optional = false)
   @JoinColumn(name = "client_id")
   private Client client;
 
-  private LocalDateTime timeStamp;
+  private LocalDateTime date;
 
   @ManyToMany
   @JoinTable(
@@ -31,13 +30,5 @@ public class Order {
       inverseJoinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
   )
   private Set<Book> books = new HashSet<>();
-
-  public void addBook(Book book) {
-    books.add(book);
-  }
-
-  public void removeBook(Book book) {
-    books.remove(book);
-  }
 
 }
