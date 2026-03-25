@@ -15,5 +15,4 @@ public class BookBasicInfoDto {
   private Long pageCount;
   private LocalDate publishDate;
   private Double price;
-
 }

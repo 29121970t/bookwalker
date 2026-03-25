@@ -53,7 +53,7 @@ public class OrderService {
     if (pageOpt.isPresent()) {
       return pageOpt.get().map(mapper::toFullDto);
     }
-    Page<Order> newRequest = orderRepo.findByAuthorSurnameNative(surname, p);
+    Page<Order> newRequest = orderRepo.findByAuthorSurname(surname, p);
     cache.save(key, newRequest);
     return newRequest.map(mapper::toFullDto);
   }

@@ -12,22 +12,6 @@ import java.util.Set;
 @Entity
 @Setter
 @Getter
-@NamedEntityGraph(
-    name = "Order.full",
-    attributeNodes = {
-        @NamedAttributeNode("client"),
-        @NamedAttributeNode(value = "books", subgraph = "books-details")
-    },
-    subgraphs = {
-        @NamedSubgraph(
-            name = "books-details",
-            attributeNodes = {
-                @NamedAttributeNode("authors"),
-                @NamedAttributeNode("publisher")
-            }
-        )
-    }
-)
 public class Order {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

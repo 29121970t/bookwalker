@@ -34,11 +34,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   @Query(value = """
       SELECT DISTINCT o.* FROM orders o
       JOIN order_book ob ON o.id = ob.order_id
+      JOIN clients c ON c.id = o.client_id
       JOIN books b ON ob.book_id = b.id
       JOIN book_author ba ON b.id = ba.book_id
       JOIN authors a ON ba.author_id = a.id
       WHERE a.surname = :surname
-      """, nativeQuery = true)
+      """,
+      nativeQuery = true)
   Page<Order> findByAuthorSurnameNative(@Param("surname") String surname, Pageable p);
 }
 
