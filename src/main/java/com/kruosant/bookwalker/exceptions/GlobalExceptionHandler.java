@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<?> handleException(MethodArgumentNotValidException ex) {
+  public ResponseEntity<Map<String, Object>> handleException(MethodArgumentNotValidException ex) {
     StringBuilder errorStringBuilder = new StringBuilder();
     ex.getBindingResult().getAllErrors().forEach(error -> {
       String fieldName = ((FieldError) error).getField();
@@ -28,12 +29,12 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<?> handleException(ResourceNotFoundException ex) {
+  public ResponseEntity<Map<String, Object>> handleException(ResourceNotFoundException ex) {
     return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), "Not found"));
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-  public ResponseEntity<?> handleException(HttpRequestMethodNotSupportedException ex) {
+  public ResponseEntity<Map<String, Object>> handleException(HttpRequestMethodNotSupportedException ex) {
     return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), "Method not allowed"));
   }
 

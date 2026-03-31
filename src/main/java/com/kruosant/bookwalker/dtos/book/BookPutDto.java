@@ -16,23 +16,23 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class BookPutDto {
-  @NotBlank(message = "field is necessary")
   @Schema(description = "Book's name", example = "Book Title", requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotBlank(message = "field is necessary")
   private String name;
 
   @Schema(description = "Book's authors", requiredMode = Schema.RequiredMode.REQUIRED)
   @NotNull(message = "field is necessary")
   private Set<Long> authors;
 
-  @Schema(description = "Book's page count", example = "300", requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "is necessary")
-  @Positive(message = "be positive number")
-  private Long pageCount;
-
   @Schema(description = "Book's publish date", example = "2004-01-01", requiredMode = Schema.RequiredMode.REQUIRED)
   @PastOrPresent(message = "cannot be in future")
   @NotNull(message = "should be positive number")
   private LocalDate publishDate;
+
+  @NotNull(message = "is necessary")
+  @Schema(description = "Book's page count", example = "300", requiredMode = Schema.RequiredMode.REQUIRED)
+  @Positive(message = "be positive number")
+  private Long pageCount;
 
   @NotNull(message = "field is necessary")
   @Positive(message = "should be positive number")

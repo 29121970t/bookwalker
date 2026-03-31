@@ -17,11 +17,15 @@ public class OrderPutDto {
   @NotNull(message = "field is required")
   @Schema(description = "Order's client", requiredMode = Schema.RequiredMode.REQUIRED)
   private Long client;
+
+  @Schema(description = "Order's date", requiredMode = Schema.RequiredMode.REQUIRED)
+  @PastOrPresent(message = "should not be in future")
+  @NotNull(message = "field is required")
+  private LocalDateTime date;
+
   @NotNull(message = "field is required")
   @Schema(description = "Order's books", requiredMode = Schema.RequiredMode.REQUIRED)
   private List<Long> books;
-  @Schema(description = "Order's date", requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "field is required")
-  @PastOrPresent(message = "should not be in future")
-  private LocalDateTime date;
+
+
 }
