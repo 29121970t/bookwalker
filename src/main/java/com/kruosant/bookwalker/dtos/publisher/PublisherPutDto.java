@@ -1,5 +1,6 @@
 package com.kruosant.bookwalker.dtos.publisher;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -12,10 +13,8 @@ import java.util.List;
 @Getter
 @Setter
 public class PublisherPutDto {
-  @NotNull
-  private Long id;
-  @NotNull
+  @NotBlank(message = "field is required")
   private String name;
-  @NotNull
+  @NotNull(message = "field is required")
   private List<Long> books;
 }

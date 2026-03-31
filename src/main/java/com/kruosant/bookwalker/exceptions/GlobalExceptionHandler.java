@@ -1,27 +1,49 @@
 package com.kruosant.bookwalker.exceptions;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.stream.Collectors;
-
+import java.time.LocalDateTime;
+import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseStatusException handleException(MethodArgumentNotValidException ex) {
-    String message = ex.getBindingResult()
-        .getFieldErrors()
-        .stream()
-        .map(e -> e.getField() + " " + e.getDefaultMessage())
-        .collect(Collectors.joining(", "));
+  public ResponseEntity<?> handleException(MethodArgumentNotValidException ex) {
+    StringBuilder errorStringBuilder = new StringBuilder();
+    ex.getBindingResult().getAllErrors().forEach(error -> {
+      String fieldName = ((FieldError) error).getField();
+      String errorMessage = error.getDefaultMessage();
+      errorStringBuilder.append(fieldName);
+      errorStringBuilder.append(" ");
+      errorStringBuilder.append(errorMessage);
+      errorStringBuilder.append(", ");
+    });
+    return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), errorStringBuilder.toString()));
+  }
 
-    return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<?> handleException(ResourceNotFoundException ex) {
+    return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), "Not found"));
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<?> handleException(HttpRequestMethodNotSupportedException ex) {
+    return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), "Method not allowed"));
+  }
+
+
+  private Map<String, Object> error(HttpStatusCode status, String message) {
+    return Map.of(
+        "timestamp", LocalDateTime.now(),
+        "status", status.value(),
+        "error", message
+    );
   }
 }
 
