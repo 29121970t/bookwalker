@@ -2,7 +2,7 @@
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %yellow(%logger{36}) - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -46,33 +46,14 @@
         </encoder>
     </appender>
 
-    <appender name="SQL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/bookwalker-app-sql.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/bookwalker-app-sql-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>500MB</totalSizeCap>
-        </rollingPolicy>
-
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-    </appender>
-
     <logger name="com.kruosant.bookwalker" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>
 
-    <logger name="org.hibernate.SQL" level="OFF" additivity="false">
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
         <appender-ref ref="SQL_FILE"/>
     </logger>
-
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="OFF"/>
-    <logger name="org.hibernate.orm.jdbc.bind" level="OFF"/>
 
     <logger name="org.springframework" level="INFO"/>
     <logger name="org.springframework.web" level="INFO"/>
