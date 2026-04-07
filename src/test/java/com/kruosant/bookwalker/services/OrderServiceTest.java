@@ -107,7 +107,9 @@ class OrderServiceTest {
 
   @Test
   void createBulkTransactionalShouldRejectEmptyPayload() {
-    assertThrows(BadRequestException.class, () -> service.createBulkTransactional(List.of()));
+    List<OrderCreateDto> emptyOrders = List.of();
+
+    assertThrows(BadRequestException.class, () -> service.createBulkTransactional(emptyOrders));
 
     verify(cache).invalidate();
     verifyNoInteractions(orderRepo, clientRepo, bookRepo, mapper);
@@ -119,6 +121,7 @@ class OrderServiceTest {
     Book book = book(10L);
     OrderCreateDto validDto = createDto(1L, List.of(10L), LocalDateTime.of(2026, 4, 3, 12, 0));
     OrderCreateDto invalidDto = createDto(1L, List.of(999L), LocalDateTime.of(2026, 4, 3, 12, 5));
+    List<OrderCreateDto> orders = List.of(validDto, invalidDto);
     AtomicLong ids = new AtomicLong(500L);
 
     when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
@@ -135,7 +138,7 @@ class OrderServiceTest {
     });
 
     assertThrows(ResourceNotFoundException.class,
-        () -> service.createBulkNonTransactional(List.of(validDto, invalidDto)));
+        () -> service.createBulkNonTransactional(orders));
 
     verify(orderRepo, times(1)).save(any(Order.class));
     verify(cache).invalidate();
