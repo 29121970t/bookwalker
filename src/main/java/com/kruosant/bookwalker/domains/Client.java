@@ -16,7 +16,7 @@ public class Client {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String userName;
+  private String username;
   private String password;
 
   @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)

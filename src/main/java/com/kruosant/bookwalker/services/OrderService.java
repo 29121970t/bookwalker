@@ -9,6 +9,7 @@ import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.dtos.order.OrderFullDto;
 import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
 import com.kruosant.bookwalker.dtos.order.OrderPutDto;
+import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.OrderMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
@@ -25,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -61,20 +63,18 @@ public class OrderService {
   @Transactional
   public OrderFullDto create(OrderCreateDto dto) {
     cache.invalidate();
-    Client client = clientRepo.findById(dto.getClient())
-        .orElseThrow(ResourceNotFoundException::new);
-    Set<Book> books = new HashSet<>();
-    if (dto.getBooks() != null) {
-      dto.getBooks()
-          .forEach(bid -> books.add(bookRepo.findById(bid)
-              .orElseThrow(ResourceNotFoundException::new)));
-    }
+    return saveAndMap(dto);
+  }
 
-    Order order = new Order();
-    order.setClient(client);
-    order.setBooks(books);
-    order.setDate(LocalDateTime.now());
-    return mapper.toFullDto(orderRepo.save(order));
+  @Transactional
+  public List<OrderFullDto> createBulkTransactional(List<OrderCreateDto> dtos) {
+    cache.invalidate();
+    return requireBulkPayload(dtos).stream().map(this::saveAndMap).toList();
+  }
+
+  public List<OrderFullDto> createBulkNonTransactional(List<OrderCreateDto> dtos) {
+    cache.invalidate();
+    return requireBulkPayload(dtos).stream().map(this::saveAndMap).toList();
   }
 
   @Transactional
@@ -89,10 +89,7 @@ public class OrderService {
     cache.invalidate();
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
     if (dto.getBooks() != null) {
-      Set<Book> books = new HashSet<>();
-      dto.getBooks().forEach(bid -> books.add(bookRepo.findById(bid)
-          .orElseThrow(ResourceNotFoundException::new)));
-      order.setBooks(books);
+      order.setBooks(fetchBooks(dto.getBooks()));
     }
     return mapper.toFullDto(orderRepo.save(order));
   }
@@ -101,11 +98,44 @@ public class OrderService {
   public OrderFullDto update(Long id, OrderPutDto dto) {
     cache.invalidate();
     Order order = orderRepo.findById(id).orElseThrow(ResourceNotFoundException::new);
-    Set<Book> books = new HashSet<>();
-    dto.getBooks().forEach(bid -> books.add(bookRepo.findById(bid)
-        .orElseThrow(ResourceNotFoundException::new)));
-    order.setBooks(books);
+    order.setBooks(fetchBooks(dto.getBooks()));
 
     return mapper.toFullDto(orderRepo.save(order));
+  }
+
+  private OrderFullDto saveAndMap(OrderCreateDto dto) {
+    return mapper.toFullDto(orderRepo.save(buildOrder(dto)));
+  }
+
+  private Order buildOrder(OrderCreateDto dto) {
+    Order order = new Order();
+    order.setClient(fetchClient(dto.getClient()));
+    order.setBooks(fetchBooks(dto.getBooks()));
+    order.setDate(Optional.ofNullable(dto.getDate()).orElseGet(LocalDateTime::now));
+    return order;
+  }
+
+  private Client fetchClient(Long clientId) {
+    return clientRepo.findById(clientId).orElseThrow(ResourceNotFoundException::new);
+  }
+
+  private Set<Book> fetchBooks(List<Long> bookIds) {
+    return Optional.ofNullable(bookIds)
+        .filter(ids -> !ids.isEmpty())
+        .map(ids -> ids.stream()
+            .map(this::fetchBook)
+            .collect(Collectors.toCollection(HashSet::new)))
+        .orElseGet(HashSet::new);
+  }
+
+  private Book fetchBook(Long bookId) {
+    return bookRepo.findById(bookId).orElseThrow(ResourceNotFoundException::new);
+  }
+
+  private List<OrderCreateDto> requireBulkPayload(List<OrderCreateDto> dtos) {
+    if (dtos == null || dtos.isEmpty()) {
+      throw new BadRequestException();
+    }
+    return dtos;
   }
 }

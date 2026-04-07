@@ -137,6 +137,82 @@ public class OrderController {
   }
 
   @Operation(
+      summary = "Create orders in bulk with a transaction",
+      description = "Creates multiple orders atomically. If one item is invalid, none of the orders are saved.",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Array of orders to create",
+          required = true,
+          content = @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(schema = @Schema(implementation = OrderCreateDto.class))
+          )
+      ),
+      responses = {
+          @ApiResponse(
+              responseCode = "201",
+              description = "Orders created successfully",
+              content = @Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  array = @ArraySchema(schema = @Schema(implementation = OrderFullDto.class))
+              )
+          ),
+          @ApiResponse(
+              responseCode = "400",
+              description = "Invalid input data"
+          )
+      }
+  )
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping(
+      value = "/bulk",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public List<OrderFullDto> createBulkTransactional(
+      @Parameter(description = "Array of new orders", required = true)
+      @Valid @RequestBody List<@Valid OrderCreateDto> dtos) {
+    return service.createBulkTransactional(dtos);
+  }
+
+  @Operation(
+      summary = "Create orders in bulk without a transaction",
+      description = "Creates multiple orders one by one. If one item is invalid, the previously saved orders remain in the database.",
+      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+          description = "Array of orders to create",
+          required = true,
+          content = @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              array = @ArraySchema(schema = @Schema(implementation = OrderCreateDto.class))
+          )
+      ),
+      responses = {
+          @ApiResponse(
+              responseCode = "201",
+              description = "Orders created successfully",
+              content = @Content(
+                  mediaType = MediaType.APPLICATION_JSON_VALUE,
+                  array = @ArraySchema(schema = @Schema(implementation = OrderFullDto.class))
+              )
+          ),
+          @ApiResponse(
+              responseCode = "400",
+              description = "Invalid input data"
+          )
+      }
+  )
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping(
+      value = "/bulk/no-transaction",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public List<OrderFullDto> createBulkNonTransactional(
+      @Parameter(description = "Array of new orders", required = true)
+      @Valid @RequestBody List<@Valid OrderCreateDto> dtos) {
+    return service.createBulkNonTransactional(dtos);
+  }
+
+  @Operation(
       summary = "Delete order by ID",
       description = "Deletes the order with the given identifier",
       responses = {

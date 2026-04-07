@@ -4,6 +4,7 @@ package com.kruosant.bookwalker.mappers;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Client;
 import com.kruosant.bookwalker.domains.Order;
+import com.kruosant.bookwalker.dtos.client.ClientBasicInfoDto;
 import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.dtos.order.OrderFullDto;
 import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
@@ -35,6 +36,10 @@ public abstract class OrderMapper {
   public abstract OrderFullDto toFullDto(Order order);
 
   public abstract OrderPatchDto toPatchDto(OrderPutDto dto);
+
+  protected ClientBasicInfoDto map(Client client) {
+    return clientMapper.toBasicInfoDto(client);
+  }
 
   public Set<Book> map(List<@NonNull Long> value) throws BadRequestException {
     return value.stream().map(id -> bookRepo.findById(id)
