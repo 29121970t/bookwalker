@@ -10,7 +10,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @SpringBootApplication
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class BookwalkerApplication {
-  static void main(String[] args) {
+  public static void main(String[] args) {
     SpringApplication.run(BookwalkerApplication.class, args);
   }
 

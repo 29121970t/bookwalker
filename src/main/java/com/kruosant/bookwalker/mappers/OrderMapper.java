@@ -14,6 +14,7 @@ import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import lombok.NonNull;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,6 +32,7 @@ public abstract class OrderMapper {
   @Autowired
   private ClientMapper clientMapper;
 
+  @Mapping(target = "id", ignore = true)
   public abstract Order toOrder(OrderCreateDto dto);
 
   public abstract OrderFullDto toFullDto(Order order);
