@@ -244,6 +244,23 @@ class BookServiceTest {
   }
 
   @Test
+  void createShouldThrowWhenPublisherMissingAndAuthorsExist() {
+    BookCreateDto dto = BookCreateDto.builder()
+        .authors(Set.of(1L, 2L))
+        .name("Book")
+        .pageCount(300L)
+        .publishDate(LocalDate.of(2020, 1, 1))
+        .publisher(10L)
+        .price(12.5)
+        .build();
+
+    when(authorRepo.findAllById(dto.getAuthors())).thenReturn(List.of(author(1L), author(2L)));
+    when(publisherRepo.findById(10L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
+  }
+
+  @Test
   void deleteBookShouldRemoveBookFromOrdersAndDeleteIt() {
     Book book = book(1L, publisher(1L));
     Order firstOrder = new Order();

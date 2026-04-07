@@ -219,6 +219,36 @@ class OrderServiceTest {
   }
 
   @Test
+  void createBulkNonTransactionalShouldSaveAllOrders() {
+    Client client = client(1L);
+    Book firstBook = book(10L);
+    Book secondBook = book(20L);
+    OrderCreateDto firstDto = createDto(1L, List.of(10L), LocalDateTime.of(2026, 4, 1, 10, 0));
+    OrderCreateDto secondDto = createDto(1L, List.of(10L, 20L), LocalDateTime.of(2026, 4, 1, 11, 0));
+    AtomicLong ids = new AtomicLong(700L);
+
+    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
+    when(bookRepo.findById(10L)).thenReturn(Optional.of(firstBook));
+    when(bookRepo.findById(20L)).thenReturn(Optional.of(secondBook));
+    when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
+      Order order = invocation.getArgument(0);
+      order.setId(ids.getAndIncrement());
+      return order;
+    });
+    when(mapper.toFullDto(any(Order.class))).thenAnswer(invocation -> {
+      Order order = invocation.getArgument(0);
+      return OrderFullDto.builder().id(order.getId()).date(order.getDate()).build();
+    });
+
+    List<OrderFullDto> result = service.createBulkNonTransactional(List.of(firstDto, secondDto));
+
+    assertEquals(2, result.size());
+    assertEquals(List.of(700L, 701L), result.stream().map(OrderFullDto::getId).toList());
+    verify(orderRepo, times(2)).save(any(Order.class));
+    verify(cache).invalidate();
+  }
+
+  @Test
   void createBulkNonTransactionalShouldLeavePreviouslySavedOrdersWhenNextItemFails() {
     Client client = client(1L);
     Book book = book(10L);
