@@ -1,6 +1,5 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.dtos.counter.Counter;
 import com.kruosant.bookwalker.dtos.counter.RaceDemoDTO;
 import org.springframework.stereotype.Service;
 
