@@ -38,8 +38,8 @@ public class OrderService {
   private final OrderSearchCache cache;
 
   @Transactional(readOnly = true)
-  public List<OrderFullDto> getAll() {
-    return orderRepo.findAll().stream().map(mapper::toFullDto).toList();
+  public Page<OrderFullDto> getAll(Pageable pageable) {
+    return orderRepo.findAll(pageable).map(mapper::toFullDto);
   }
 
   @Transactional(readOnly = true)

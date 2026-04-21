@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-21T23:04:11+0300",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-04-22T00:06:01+0300",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 26.0.2 (Arch Linux)"
 )
 @Component
 public class ClientMapperImpl implements ClientMapper {
@@ -33,8 +33,8 @@ public class ClientMapperImpl implements ClientMapper {
 
         Client client = new Client();
 
-        client.setPassword( dto.getPassword() );
         client.setUsername( dto.getUsername() );
+        client.setPassword( dto.getPassword() );
 
         return client;
     }
@@ -48,8 +48,8 @@ public class ClientMapperImpl implements ClientMapper {
         ClientFullDto.ClientFullDtoBuilder clientFullDto = ClientFullDto.builder();
 
         clientFullDto.id( client.getId() );
-        clientFullDto.orders( orderSetToOrderBasicInfoDtoList( client.getOrders() ) );
         clientFullDto.username( client.getUsername() );
+        clientFullDto.orders( orderSetToOrderBasicInfoDtoList( client.getOrders() ) );
 
         return clientFullDto.build();
     }
@@ -91,8 +91,8 @@ public class ClientMapperImpl implements ClientMapper {
         bookBasicInfoDto.id( book.getId() );
         bookBasicInfoDto.name( book.getName() );
         bookBasicInfoDto.pageCount( book.getPageCount() );
-        bookBasicInfoDto.price( book.getPrice() );
         bookBasicInfoDto.publishDate( book.getPublishDate() );
+        bookBasicInfoDto.price( book.getPrice() );
 
         return bookBasicInfoDto.build();
     }
@@ -117,9 +117,9 @@ public class ClientMapperImpl implements ClientMapper {
 
         OrderBasicInfoDto.OrderBasicInfoDtoBuilder orderBasicInfoDto = OrderBasicInfoDto.builder();
 
-        orderBasicInfoDto.books( bookSetToBookBasicInfoDtoSet( order.getBooks() ) );
-        orderBasicInfoDto.date( order.getDate() );
         orderBasicInfoDto.id( order.getId() );
+        orderBasicInfoDto.date( order.getDate() );
+        orderBasicInfoDto.books( bookSetToBookBasicInfoDtoSet( order.getBooks() ) );
 
         return orderBasicInfoDto.build();
     }

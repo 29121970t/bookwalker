@@ -10,6 +10,8 @@ import com.kruosant.bookwalker.mappers.ClientMapper;
 import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +25,8 @@ public class ClientService {
   private final ClientMapper mapper;
 
   @Transactional(readOnly = true)
-  public List<ClientFullDto> getAll() {
-    return clientRepo.findAll().stream().map(mapper::toFullDto).toList();
+  public Page<ClientFullDto> getAll(Pageable pageable) {
+    return clientRepo.findAll(pageable).map(mapper::toFullDto);
   }
 
   @Transactional(readOnly = true)

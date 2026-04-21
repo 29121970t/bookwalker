@@ -14,11 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Authors", description = "Author management endpoints")
 @RestController
@@ -37,14 +40,16 @@ public final class AuthorController {
               description = "Success",
               content = @Content(
                   mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  array = @ArraySchema(schema = @Schema(implementation = AuthorFullDto.class))
+                  schema = @Schema(implementation = Page.class)
               )
           )
       }
   )
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<AuthorFullDto> getAll() {
-    return service.getAllFullDto();
+  public Page<AuthorFullDto> getAll(
+      @ParameterObject
+      @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+    return service.getAllFullDto(pageable);
   }
 
   @Operation(

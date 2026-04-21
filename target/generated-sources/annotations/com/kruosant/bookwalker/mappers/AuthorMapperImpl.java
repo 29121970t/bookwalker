@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-21T23:04:11+0300",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-04-22T00:06:01+0300",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 26.0.2 (Arch Linux)"
 )
 @Component
 public class AuthorMapperImpl implements AuthorMapper {
@@ -30,10 +30,10 @@ public class AuthorMapperImpl implements AuthorMapper {
 
         Author.AuthorBuilder author = Author.builder();
 
-        author.bio( dto.getBio() );
-        author.middleName( dto.getMiddleName() );
         author.name( dto.getName() );
+        author.middleName( dto.getMiddleName() );
         author.surname( dto.getSurname() );
+        author.bio( dto.getBio() );
 
         return author.build();
     }
@@ -46,10 +46,10 @@ public class AuthorMapperImpl implements AuthorMapper {
 
         Author.AuthorBuilder author = Author.builder();
 
-        author.bio( dto.getBio() );
-        author.middleName( dto.getMiddleName() );
         author.name( dto.getName() );
+        author.middleName( dto.getMiddleName() );
         author.surname( dto.getSurname() );
+        author.bio( dto.getBio() );
 
         return author.build();
     }
@@ -62,12 +62,12 @@ public class AuthorMapperImpl implements AuthorMapper {
 
         AuthorFullDto.AuthorFullDtoBuilder authorFullDto = AuthorFullDto.builder();
 
+        authorFullDto.id( dto.getId() );
+        authorFullDto.name( dto.getName() );
+        authorFullDto.middleName( dto.getMiddleName() );
+        authorFullDto.surname( dto.getSurname() );
         authorFullDto.bio( dto.getBio() );
         authorFullDto.books( bookSetToBookBasicInfoDtoList( dto.getBooks() ) );
-        authorFullDto.id( dto.getId() );
-        authorFullDto.middleName( dto.getMiddleName() );
-        authorFullDto.name( dto.getName() );
-        authorFullDto.surname( dto.getSurname() );
 
         return authorFullDto.build();
     }
@@ -80,14 +80,14 @@ public class AuthorMapperImpl implements AuthorMapper {
 
         AuthorPatchDto.AuthorPatchDtoBuilder authorPatchDto = AuthorPatchDto.builder();
 
+        authorPatchDto.name( dto.getName() );
+        authorPatchDto.middleName( dto.getMiddleName() );
+        authorPatchDto.surname( dto.getSurname() );
         authorPatchDto.bio( dto.getBio() );
         Set<Long> set = dto.getBooks();
         if ( set != null ) {
             authorPatchDto.books( new LinkedHashSet<Long>( set ) );
         }
-        authorPatchDto.middleName( dto.getMiddleName() );
-        authorPatchDto.name( dto.getName() );
-        authorPatchDto.surname( dto.getSurname() );
 
         return authorPatchDto.build();
     }
@@ -98,6 +98,15 @@ public class AuthorMapperImpl implements AuthorMapper {
             return;
         }
 
+        if ( dto.getName() != null ) {
+            author.setName( dto.getName() );
+        }
+        if ( dto.getMiddleName() != null ) {
+            author.setMiddleName( dto.getMiddleName() );
+        }
+        if ( dto.getSurname() != null ) {
+            author.setSurname( dto.getSurname() );
+        }
         if ( dto.getBio() != null ) {
             author.setBio( dto.getBio() );
         }
@@ -113,15 +122,6 @@ public class AuthorMapperImpl implements AuthorMapper {
             if ( set != null ) {
                 author.setBooks( set );
             }
-        }
-        if ( dto.getMiddleName() != null ) {
-            author.setMiddleName( dto.getMiddleName() );
-        }
-        if ( dto.getName() != null ) {
-            author.setName( dto.getName() );
-        }
-        if ( dto.getSurname() != null ) {
-            author.setSurname( dto.getSurname() );
         }
     }
 
@@ -131,6 +131,15 @@ public class AuthorMapperImpl implements AuthorMapper {
             return;
         }
 
+        if ( dto.getName() != null ) {
+            author.setName( dto.getName() );
+        }
+        if ( dto.getMiddleName() != null ) {
+            author.setMiddleName( dto.getMiddleName() );
+        }
+        if ( dto.getSurname() != null ) {
+            author.setSurname( dto.getSurname() );
+        }
         if ( dto.getBio() != null ) {
             author.setBio( dto.getBio() );
         }
@@ -146,15 +155,6 @@ public class AuthorMapperImpl implements AuthorMapper {
             if ( set != null ) {
                 author.setBooks( set );
             }
-        }
-        if ( dto.getMiddleName() != null ) {
-            author.setMiddleName( dto.getMiddleName() );
-        }
-        if ( dto.getName() != null ) {
-            author.setName( dto.getName() );
-        }
-        if ( dto.getSurname() != null ) {
-            author.setSurname( dto.getSurname() );
         }
     }
 
@@ -166,11 +166,11 @@ public class AuthorMapperImpl implements AuthorMapper {
 
         Author.AuthorBuilder author = Author.builder();
 
+        author.name( dto.getName() );
+        author.middleName( dto.getMiddleName() );
+        author.surname( dto.getSurname() );
         author.bio( dto.getBio() );
         author.books( map( dto.getBooks() ) );
-        author.middleName( dto.getMiddleName() );
-        author.name( dto.getName() );
-        author.surname( dto.getSurname() );
 
         return author.build();
     }
@@ -185,8 +185,8 @@ public class AuthorMapperImpl implements AuthorMapper {
         bookBasicInfoDto.id( book.getId() );
         bookBasicInfoDto.name( book.getName() );
         bookBasicInfoDto.pageCount( book.getPageCount() );
-        bookBasicInfoDto.price( book.getPrice() );
         bookBasicInfoDto.publishDate( book.getPublishDate() );
+        bookBasicInfoDto.price( book.getPrice() );
 
         return bookBasicInfoDto.build();
     }

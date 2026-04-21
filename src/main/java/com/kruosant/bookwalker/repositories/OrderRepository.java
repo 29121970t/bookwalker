@@ -16,6 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
   @EntityGraph(attributePaths = {"books", "client"})
   List<Order> findAll();
 
+  Page<Order> findAll(Pageable pageable);
+
   @EntityGraph(attributePaths = {"books", "client"})
   Optional<Order> findById(Long id);
 
@@ -23,7 +25,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
   List<Order> findAllByBooksContains(Book book);
 
-  @EntityGraph(value = "Order.full", type = EntityGraph.EntityGraphType.LOAD)
   @Query("""
       SELECT DISTINCT o FROM Order o
       JOIN o.books b
@@ -43,9 +44,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       nativeQuery = true)
   Page<Order> findByAuthorSurnameNative(@Param("surname") String surname, Pageable p);
 }
-
-
-
 
 
 

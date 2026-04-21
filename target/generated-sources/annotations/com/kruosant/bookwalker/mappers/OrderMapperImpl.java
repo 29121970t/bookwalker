@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-21T23:04:11+0300",
+    date = "2026-04-22T00:21:17+0300",
     comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
@@ -31,18 +31,18 @@ public class OrderMapperImpl extends OrderMapper {
         Order order = new Order();
 
         try {
-            order.setBooks( map( dto.getBooks() ) );
-        }
-        catch ( BadRequestException e ) {
-            throw new RuntimeException( e );
-        }
-        try {
             order.setClient( map( dto.getClient() ) );
         }
         catch ( BadRequestException e ) {
             throw new RuntimeException( e );
         }
         order.setDate( dto.getDate() );
+        try {
+            order.setBooks( map( dto.getBooks() ) );
+        }
+        catch ( BadRequestException e ) {
+            throw new RuntimeException( e );
+        }
 
         return order;
     }
@@ -55,10 +55,10 @@ public class OrderMapperImpl extends OrderMapper {
 
         OrderFullDto.OrderFullDtoBuilder orderFullDto = OrderFullDto.builder();
 
-        orderFullDto.books( bookSetToBookBasicInfoDtoList( order.getBooks() ) );
+        orderFullDto.id( order.getId() );
         orderFullDto.client( map( order.getClient() ) );
         orderFullDto.date( order.getDate() );
-        orderFullDto.id( order.getId() );
+        orderFullDto.books( bookSetToBookBasicInfoDtoList( order.getBooks() ) );
 
         return orderFullDto.build();
     }
@@ -89,8 +89,8 @@ public class OrderMapperImpl extends OrderMapper {
         bookBasicInfoDto.id( book.getId() );
         bookBasicInfoDto.name( book.getName() );
         bookBasicInfoDto.pageCount( book.getPageCount() );
-        bookBasicInfoDto.price( book.getPrice() );
         bookBasicInfoDto.publishDate( book.getPublishDate() );
+        bookBasicInfoDto.price( book.getPrice() );
 
         return bookBasicInfoDto.build();
     }

@@ -47,14 +47,16 @@ public class OrderController {
               description = "Success",
               content = @Content(
                   mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  array = @ArraySchema(schema = @Schema(implementation = OrderFullDto.class))
+                  schema = @Schema(implementation = Page.class)
               )
           )
       }
   )
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<OrderFullDto> getAll() {
-    return service.getAll();
+  public Page<OrderFullDto> getAll(
+      @ParameterObject
+      @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+    return service.getAll(pageable);
   }
 
   @Operation(

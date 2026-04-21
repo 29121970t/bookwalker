@@ -18,8 +18,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-21T23:04:10+0300",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-04-22T00:06:01+0300",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 26.0.2 (Arch Linux)"
 )
 @Component
 public class BookMapperImpl implements BookMapper {
@@ -32,13 +32,13 @@ public class BookMapperImpl implements BookMapper {
 
         BookFullDto.BookFullDtoBuilder bookFullDto = BookFullDto.builder();
 
-        bookFullDto.authors( authorSetToAuthorBasicInfoDtoSet( book.getAuthors() ) );
         bookFullDto.id( book.getId() );
         bookFullDto.name( book.getName() );
+        bookFullDto.authors( authorSetToAuthorBasicInfoDtoSet( book.getAuthors() ) );
         bookFullDto.pageCount( book.getPageCount() );
-        bookFullDto.price( book.getPrice() );
         bookFullDto.publishDate( book.getPublishDate() );
         bookFullDto.publisher( publisherToPublisherBasicInfoDto( book.getPublisher() ) );
+        bookFullDto.price( book.getPrice() );
 
         return bookFullDto.build();
     }
@@ -82,8 +82,8 @@ public class BookMapperImpl implements BookMapper {
         bookBasicInfoDto.id( book.getId() );
         bookBasicInfoDto.name( book.getName() );
         bookBasicInfoDto.pageCount( book.getPageCount() );
-        bookBasicInfoDto.price( book.getPrice() );
         bookBasicInfoDto.publishDate( book.getPublishDate() );
+        bookBasicInfoDto.price( book.getPrice() );
 
         return bookBasicInfoDto.build();
     }
@@ -124,15 +124,15 @@ public class BookMapperImpl implements BookMapper {
 
         BookPatchDto.BookPatchDtoBuilder bookPatchDto = BookPatchDto.builder();
 
+        bookPatchDto.name( dto.getName() );
         Set<Long> set = dto.getAuthors();
         if ( set != null ) {
             bookPatchDto.authors( new LinkedHashSet<Long>( set ) );
         }
-        bookPatchDto.name( dto.getName() );
         bookPatchDto.pageCount( dto.getPageCount() );
-        bookPatchDto.price( dto.getPrice() );
         bookPatchDto.publishDate( dto.getPublishDate() );
         bookPatchDto.publisher( dto.getPublisher() );
+        bookPatchDto.price( dto.getPrice() );
 
         return bookPatchDto.build();
     }
@@ -149,11 +149,11 @@ public class BookMapperImpl implements BookMapper {
         if ( dto.getPageCount() != null ) {
             book.setPageCount( dto.getPageCount() );
         }
-        if ( dto.getPrice() != null ) {
-            book.setPrice( dto.getPrice() );
-        }
         if ( dto.getPublishDate() != null ) {
             book.setPublishDate( dto.getPublishDate() );
+        }
+        if ( dto.getPrice() != null ) {
+            book.setPrice( dto.getPrice() );
         }
     }
 
@@ -169,11 +169,11 @@ public class BookMapperImpl implements BookMapper {
         if ( dto.getPageCount() != null ) {
             book.setPageCount( dto.getPageCount() );
         }
-        if ( dto.getPrice() != null ) {
-            book.setPrice( dto.getPrice() );
-        }
         if ( dto.getPublishDate() != null ) {
             book.setPublishDate( dto.getPublishDate() );
+        }
+        if ( dto.getPrice() != null ) {
+            book.setPrice( dto.getPrice() );
         }
     }
 
@@ -184,11 +184,11 @@ public class BookMapperImpl implements BookMapper {
 
         AuthorBasicInfoDto.AuthorBasicInfoDtoBuilder authorBasicInfoDto = AuthorBasicInfoDto.builder();
 
-        authorBasicInfoDto.bio( author.getBio() );
         authorBasicInfoDto.id( author.getId() );
-        authorBasicInfoDto.middleName( author.getMiddleName() );
         authorBasicInfoDto.name( author.getName() );
+        authorBasicInfoDto.middleName( author.getMiddleName() );
         authorBasicInfoDto.surname( author.getSurname() );
+        authorBasicInfoDto.bio( author.getBio() );
 
         return authorBasicInfoDto.build();
     }

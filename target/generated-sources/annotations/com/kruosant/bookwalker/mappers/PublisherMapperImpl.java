@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-04-21T23:04:11+0300",
-    comments = "version: 1.6.3, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
+    date = "2026-04-22T00:06:01+0300",
+    comments = "version: 1.6.3, compiler: javac, environment: Java 26.0.2 (Arch Linux)"
 )
 @Component
 public class PublisherMapperImpl implements PublisherMapper {
@@ -55,9 +55,9 @@ public class PublisherMapperImpl implements PublisherMapper {
 
         PublisherFullDto.PublisherFullDtoBuilder publisherFullDto = PublisherFullDto.builder();
 
-        publisherFullDto.books( bookSetToBookBasicInfoDtoList( dto.getBooks() ) );
         publisherFullDto.id( dto.getId() );
         publisherFullDto.name( dto.getName() );
+        publisherFullDto.books( bookSetToBookBasicInfoDtoList( dto.getBooks() ) );
 
         return publisherFullDto.build();
     }
@@ -70,11 +70,11 @@ public class PublisherMapperImpl implements PublisherMapper {
 
         PublisherPatchDto.PublisherPatchDtoBuilder publisherPatchDto = PublisherPatchDto.builder();
 
+        publisherPatchDto.name( dto.getName() );
         List<Long> list = dto.getBooks();
         if ( list != null ) {
             publisherPatchDto.books( new ArrayList<Long>( list ) );
         }
-        publisherPatchDto.name( dto.getName() );
 
         return publisherPatchDto.build();
     }
@@ -89,8 +89,8 @@ public class PublisherMapperImpl implements PublisherMapper {
         bookBasicInfoDto.id( book.getId() );
         bookBasicInfoDto.name( book.getName() );
         bookBasicInfoDto.pageCount( book.getPageCount() );
-        bookBasicInfoDto.price( book.getPrice() );
         bookBasicInfoDto.publishDate( book.getPublishDate() );
+        bookBasicInfoDto.price( book.getPrice() );
 
         return bookBasicInfoDto.build();
     }

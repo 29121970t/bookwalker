@@ -11,6 +11,8 @@ import com.kruosant.bookwalker.mappers.PublisherMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +38,8 @@ public class PublisherService {
   }
 
   @Transactional(readOnly = true)
-  public List<PublisherFullDto> getAll() {
-    return publisherRepo.findAll().stream().map(mapper::toFullDto).toList();
+  public Page<PublisherFullDto> getAll(Pageable pageable) {
+    return publisherRepo.findAll(pageable).map(mapper::toFullDto);
   }
 
   @Transactional
