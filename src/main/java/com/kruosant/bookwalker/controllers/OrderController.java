@@ -1,9 +1,11 @@
 package com.kruosant.bookwalker.controllers;
 
+import com.kruosant.bookwalker.domains.AsyncTask;
 import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.dtos.order.OrderFullDto;
 import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
 import com.kruosant.bookwalker.dtos.order.OrderPutDto;
+import com.kruosant.bookwalker.services.AsyncOrderService;
 import com.kruosant.bookwalker.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,15 +16,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Orders", description = "Order management endpoints")
 @RestController
@@ -31,6 +36,7 @@ import java.util.List;
 public class OrderController {
 
   private final OrderService service;
+  private final AsyncOrderService asyncOrderService;
 
   @Operation(
       summary = "Get all orders",
@@ -69,7 +75,7 @@ public class OrderController {
   public Page<OrderFullDto> search(
       @Parameter(description = "Author surname", required = true, example = "Tolkien")
       @RequestParam(name = "authorSurname") String authorSurname,
-      @Parameter(description = "Pagination parameters (page, size, sort)")
+      @ParameterObject
       @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable p) {
     return service.getOrdersWithBooksOf(authorSurname, p);
   }
@@ -172,44 +178,6 @@ public class OrderController {
       @Parameter(description = "Array of new orders", required = true)
       @Valid @RequestBody List<@Valid OrderCreateDto> dtos) {
     return service.createBulkTransactional(dtos);
-  }
-
-  @Operation(
-      summary = "Create orders in bulk without a transaction",
-      description = "Creates multiple orders one by one. If one item is invalid, the previously saved orders remain in the database.",
-      requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-          description = "Array of orders to create",
-          required = true,
-          content = @Content(
-              mediaType = MediaType.APPLICATION_JSON_VALUE,
-              array = @ArraySchema(schema = @Schema(implementation = OrderCreateDto.class))
-          )
-      ),
-      responses = {
-          @ApiResponse(
-              responseCode = "201",
-              description = "Orders created successfully",
-              content = @Content(
-                  mediaType = MediaType.APPLICATION_JSON_VALUE,
-                  array = @ArraySchema(schema = @Schema(implementation = OrderFullDto.class))
-              )
-          ),
-          @ApiResponse(
-              responseCode = "400",
-              description = "Invalid input data"
-          )
-      }
-  )
-  @ResponseStatus(HttpStatus.CREATED)
-  @PostMapping(
-      value = "/bulk/no-transaction",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE
-  )
-  public List<OrderFullDto> createBulkNonTransactional(
-      @Parameter(description = "Array of new orders", required = true)
-      @Valid @RequestBody List<@Valid OrderCreateDto> dtos) {
-    return service.createBulkNonTransactional(dtos);
   }
 
   @Operation(
@@ -319,4 +287,31 @@ public class OrderController {
       @Valid @RequestBody OrderPutDto dto) {
     return service.update(id, dto);
   }
+
+
+
+
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(
+      value = "/bulk-async",
+      consumes = MediaType.APPLICATION_JSON_VALUE,
+      produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  public AsyncTask createBulkAsync(
+      @Parameter(description = "Array of new orders", required = true)
+      @Valid @RequestBody List<@Valid OrderCreateDto> dtos) {
+    return asyncOrderService.createBulkAsync(dtos);
+  }
+
+  @GetMapping("/bulk-async/{taskId}")
+  public ResponseEntity<AsyncTask> getTaskStatus(@PathVariable String taskId) {
+    return ResponseEntity.ok(asyncOrderService.getTaskStatus(taskId));
+  }
+
+  @GetMapping("/bulk-async/tasks")
+  public ResponseEntity<Map<String, AsyncTask>> getAllAsyncTasks() {
+    return ResponseEntity.ok(asyncOrderService.getAllTasks());
+  }
+
+
 }

@@ -1,6 +1,8 @@
 package com.kruosant.bookwalker.repositories;
 
 import com.kruosant.bookwalker.domains.Book;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -18,4 +20,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
   @EntityGraph(value = "Book.authors.publisher", type = EntityGraph.EntityGraphType.FETCH)
   List<Book> findAll();
+
+  @EntityGraph(value = "Book.authors.publisher", type = EntityGraph.EntityGraphType.FETCH)
+  Page<Book> findAll(Pageable p);
 }

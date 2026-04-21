@@ -18,6 +18,8 @@ import com.kruosant.bookwalker.repositories.OrderRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
 import lombok.AllArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,8 +92,8 @@ public class BookService {
   }
 
   @Transactional(readOnly = true)
-  public List<BookFullDto> getAll() {
-    return bookRepo.findAll().stream().map(bookMapper::toFullDto).toList();
+  public Page<BookFullDto> getAll(Pageable p) {
+    return bookRepo.findAll(p).map(bookMapper::toFullDto);
   }
 
   @Transactional
@@ -99,7 +101,6 @@ public class BookService {
     cache.invalidate();
     List<Author> authors = authorRepo.findAllById(dto.getAuthors());
     Optional<Publisher> publisherOpt = publisherRepo.findById(dto.getPublisher());
-
     if (authors.size() != dto.getAuthors().size() || publisherOpt.isEmpty()) {
       throw new ResourceNotFoundException();
     }

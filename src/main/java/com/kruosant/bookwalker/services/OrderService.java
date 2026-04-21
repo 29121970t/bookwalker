@@ -72,11 +72,6 @@ public class OrderService {
     return requireBulkPayload(dtos).stream().map(this::saveAndMap).toList();
   }
 
-  public List<OrderFullDto> createBulkNonTransactional(List<OrderCreateDto> dtos) {
-    cache.invalidate();
-    return requireBulkPayload(dtos).stream().map(this::saveAndMap).toList();
-  }
-
   @Transactional
   public void delete(Long id) {
     cache.invalidate();

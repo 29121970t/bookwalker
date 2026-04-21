@@ -1,7 +1,0 @@
-WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
-WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
-WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
-WARNING: Final field bookRepo in class com.kruosant.bookwalker.services.BookService has been mutated reflectively by class org.mockito.internal.util.reflection.ReflectionMemberAccessor in unnamed module @46dffdc3 (file:/home/kruosant/.m2/repository/org/mockito/mockito-core/5.20.0/mockito-core-5.20.0.jar)
-WARNING: Use --enable-final-field-mutation=ALL-UNNAMED to avoid a warning
-WARNING: Mutating final fields will be blocked in a future release unless final field mutation is enabled
