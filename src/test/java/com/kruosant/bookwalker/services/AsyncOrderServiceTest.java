@@ -38,8 +38,9 @@ class AsyncOrderServiceTest {
   @Test
   void createBulkAsyncShouldRejectEmptyPayload() throws Exception {
     AsyncOrderService service = serviceWith(new ConcurrentHashMap<>());
+    List<OrderCreateDto> emptyPayload = List.of();
 
-    assertThrows(BadRequestException.class, () -> service.createBulkAsync(List.of()));
+    assertThrows(BadRequestException.class, () -> service.createBulkAsync(emptyPayload));
   }
 
   @Test
@@ -115,6 +116,7 @@ class AsyncOrderServiceTest {
   void getAllTasksShouldReturnImmutableSnapshot() throws Exception {
     Map<String, AsyncTask> tasks = new ConcurrentHashMap<>();
     AsyncTask task = AsyncTask.builder().taskId("task-1").status(AsyncTaskStatus.PENDING).build();
+    AsyncTask anotherTask = AsyncTask.builder().taskId("task-2").build();
     tasks.put("task-1", task);
     AsyncOrderService service = serviceWith(tasks);
 
@@ -123,7 +125,7 @@ class AsyncOrderServiceTest {
     assertEquals(1, result.size());
     assertSame(task, result.get("task-1"));
     assertThrows(UnsupportedOperationException.class,
-        () -> result.put("task-2", AsyncTask.builder().taskId("task-2").build()));
+        () -> result.put("task-2", anotherTask));
   }
 
   private AsyncOrderService serviceWith(Map<String, AsyncTask> tasks) throws Exception {
