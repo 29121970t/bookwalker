@@ -15,6 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.HashSet;
 import java.util.List;
@@ -76,18 +79,20 @@ class PublisherServiceTest {
 
   @Test
   void getAllShouldReturnMappedPublishers() {
+    PageRequest pageable = PageRequest.of(0, 20);
     Publisher first = publisher(1L, "Pub1");
     Publisher second = publisher(2L, "Pub2");
     PublisherFullDto firstDto = PublisherFullDto.builder().id(1L).name("Pub1").build();
     PublisherFullDto secondDto = PublisherFullDto.builder().id(2L).name("Pub2").build();
 
-    when(publisherRepo.findAll()).thenReturn(List.of(first, second));
+    when(publisherRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
     when(mapper.toFullDto(first)).thenReturn(firstDto);
     when(mapper.toFullDto(second)).thenReturn(secondDto);
 
-    List<PublisherFullDto> result = service.getAll();
+    Page<PublisherFullDto> result = service.getAll(pageable);
 
-    assertEquals(List.of(firstDto, secondDto), result);
+    assertEquals(List.of(firstDto, secondDto), result.getContent());
+    assertEquals(2, result.getTotalElements());
   }
 
   @Test

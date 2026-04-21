@@ -21,6 +21,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -175,18 +178,27 @@ class BookServiceTest {
 
   @Test
   void getAllShouldReturnMappedBooks() {
+    PageRequest pageable = PageRequest.of(0, 20);
     Book first = book(1L, publisher(1L));
     Book second = book(2L, publisher(1L));
     BookFullDto firstDto = BookFullDto.builder().id(1L).name("First").build();
     BookFullDto secondDto = BookFullDto.builder().id(2L).name("Second").build();
 
-    when(bookRepo.findAll()).thenReturn(List.of(first, second));
+    when(bookRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
     when(bookMapper.toFullDto(first)).thenReturn(firstDto);
     when(bookMapper.toFullDto(second)).thenReturn(secondDto);
 
-    List<BookFullDto> result = service.getAll();
+    Page<BookFullDto> result = service.getAll(pageable);
 
-    assertEquals(List.of(firstDto, secondDto), result);
+    assertEquals(List.of(firstDto, secondDto), result.getContent());
+    assertEquals(2, result.getTotalElements());
+  }
+
+  @Test
+  void getByIdShouldThrowWhenBookMissing() {
+    when(bookRepo.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(1L));
   }
 
   @Test

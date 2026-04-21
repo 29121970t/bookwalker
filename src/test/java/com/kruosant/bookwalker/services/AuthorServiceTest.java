@@ -16,6 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.HashSet;
 import java.util.List;
@@ -129,18 +132,20 @@ class AuthorServiceTest {
 
   @Test
   void getAllFullDtoShouldReturnMappedAuthors() {
+    PageRequest pageable = PageRequest.of(0, 20);
     Author first = author(1L);
     Author second = author(2L);
     AuthorFullDto firstDto = AuthorFullDto.builder().id(1L).name("First").build();
     AuthorFullDto secondDto = AuthorFullDto.builder().id(2L).name("Second").build();
 
-    when(authorRepo.findAll()).thenReturn(List.of(first, second));
+    when(authorRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
     when(mapper.toFullDto(first)).thenReturn(firstDto);
     when(mapper.toFullDto(second)).thenReturn(secondDto);
 
-    List<AuthorFullDto> result = service.getAllFullDto();
+    Page<AuthorFullDto> result = service.getAllFullDto(pageable);
 
-    assertEquals(List.of(firstDto, secondDto), result);
+    assertEquals(List.of(firstDto, secondDto), result.getContent());
+    assertEquals(2, result.getTotalElements());
   }
 
   @Test

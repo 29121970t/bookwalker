@@ -54,6 +54,7 @@ class OrderServiceTest {
 
   @Test
   void getAllShouldReturnMappedOrders() {
+    PageRequest pageable = PageRequest.of(0, 20);
     Order first = new Order();
     first.setId(1L);
     Order second = new Order();
@@ -61,13 +62,14 @@ class OrderServiceTest {
     OrderFullDto firstDto = OrderFullDto.builder().id(1L).build();
     OrderFullDto secondDto = OrderFullDto.builder().id(2L).build();
 
-    when(orderRepo.findAll()).thenReturn(List.of(first, second));
+    when(orderRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
     when(mapper.toFullDto(first)).thenReturn(firstDto);
     when(mapper.toFullDto(second)).thenReturn(secondDto);
 
-    List<OrderFullDto> result = service.getAll();
+    Page<OrderFullDto> result = service.getAll(pageable);
 
-    assertEquals(List.of(firstDto, secondDto), result);
+    assertEquals(List.of(firstDto, secondDto), result.getContent());
+    assertEquals(2, result.getTotalElements());
   }
 
   @Test
@@ -203,72 +205,11 @@ class OrderServiceTest {
   }
 
   @Test
-  void createBulkNonTransactionalShouldRejectNullPayload() {
-    List<OrderCreateDto> orders = null;
-
-    assertThrows(BadRequestException.class, () -> service.createBulkNonTransactional(orders));
+  void createBulkTransactionalShouldRejectNullPayload() {
+    assertThrows(BadRequestException.class, () -> service.createBulkTransactional(null));
 
     verify(cache).invalidate();
     verifyNoInteractions(orderRepo, clientRepo, bookRepo, mapper);
-  }
-
-  @Test
-  void createBulkNonTransactionalShouldSaveAllOrders() {
-    Client client = client(1L);
-    Book firstBook = book(10L);
-    Book secondBook = book(20L);
-    OrderCreateDto firstDto = createDto(1L, List.of(10L), LocalDateTime.of(2026, 4, 1, 10, 0));
-    OrderCreateDto secondDto = createDto(1L, List.of(10L, 20L), LocalDateTime.of(2026, 4, 1, 11, 0));
-    AtomicLong ids = new AtomicLong(700L);
-
-    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(firstBook));
-    when(bookRepo.findById(20L)).thenReturn(Optional.of(secondBook));
-    when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      order.setId(ids.getAndIncrement());
-      return order;
-    });
-    when(mapper.toFullDto(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      return OrderFullDto.builder().id(order.getId()).date(order.getDate()).build();
-    });
-
-    List<OrderFullDto> result = service.createBulkNonTransactional(List.of(firstDto, secondDto));
-
-    assertEquals(2, result.size());
-    assertEquals(List.of(700L, 701L), result.stream().map(OrderFullDto::getId).toList());
-    verify(orderRepo, times(2)).save(any(Order.class));
-    verify(cache).invalidate();
-  }
-
-  @Test
-  void createBulkNonTransactionalShouldLeavePreviouslySavedOrdersWhenNextItemFails() {
-    Client client = client(1L);
-    Book book = book(10L);
-    OrderCreateDto validDto = createDto(1L, List.of(10L), LocalDateTime.of(2026, 4, 3, 12, 0));
-    OrderCreateDto invalidDto = createDto(1L, List.of(999L), LocalDateTime.of(2026, 4, 3, 12, 5));
-    List<OrderCreateDto> orders = List.of(validDto, invalidDto);
-    AtomicLong ids = new AtomicLong(500L);
-
-    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(book));
-    when(bookRepo.findById(999L)).thenReturn(Optional.empty());
-    when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      order.setId(ids.getAndIncrement());
-      return order;
-    });
-    when(mapper.toFullDto(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      return OrderFullDto.builder().id(order.getId()).build();
-    });
-
-    assertThrows(ResourceNotFoundException.class,
-        () -> service.createBulkNonTransactional(orders));
-
-    verify(orderRepo, times(1)).save(any(Order.class));
-    verify(cache).invalidate();
   }
 
   @Test
@@ -335,6 +276,34 @@ class OrderServiceTest {
 
     assertEquals(Set.of(), order.getBooks());
     assertEquals(fullDto, result);
+  }
+
+  @Test
+  void updatePutShouldTreatNullBooksAsEmptySet() {
+    Order order = new Order();
+    OrderPutDto dto = OrderPutDto.builder().books(null).build();
+    OrderFullDto fullDto = OrderFullDto.builder().id(1L).build();
+
+    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
+    when(orderRepo.save(order)).thenReturn(order);
+    when(mapper.toFullDto(order)).thenReturn(fullDto);
+
+    OrderFullDto result = service.update(1L, dto);
+
+    verify(cache).invalidate();
+    assertEquals(Set.of(), order.getBooks());
+    assertEquals(fullDto, result);
+  }
+
+  @Test
+  void createShouldThrowWhenClientMissing() {
+    OrderCreateDto dto = createDto(99L, List.of(10L), LocalDateTime.of(2026, 4, 2, 12, 0));
+    when(clientRepo.findById(99L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
+
+    verify(cache).invalidate();
+    verify(orderRepo, never()).save(any());
   }
 
   private static Client client(Long id) {

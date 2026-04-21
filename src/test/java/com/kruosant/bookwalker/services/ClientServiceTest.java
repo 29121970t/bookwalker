@@ -15,6 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,18 +42,20 @@ class ClientServiceTest {
 
   @Test
   void getAllShouldReturnMappedClients() {
+    PageRequest pageable = PageRequest.of(0, 20);
     Client first = client(1L, "reader-1");
     Client second = client(2L, "reader-2");
     ClientFullDto firstDto = ClientFullDto.builder().id(1L).username("reader-1").build();
     ClientFullDto secondDto = ClientFullDto.builder().id(2L).username("reader-2").build();
 
-    when(clientRepo.findAll()).thenReturn(List.of(first, second));
+    when(clientRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
     when(mapper.toFullDto(first)).thenReturn(firstDto);
     when(mapper.toFullDto(second)).thenReturn(secondDto);
 
-    List<ClientFullDto> result = service.getAll();
+    Page<ClientFullDto> result = service.getAll(pageable);
 
-    assertEquals(List.of(firstDto, secondDto), result);
+    assertEquals(List.of(firstDto, secondDto), result.getContent());
+    assertEquals(2, result.getTotalElements());
   }
 
   @Test
