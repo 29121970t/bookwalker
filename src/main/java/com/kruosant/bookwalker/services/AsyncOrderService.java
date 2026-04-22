@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 @AllArgsConstructor
 public class AsyncOrderService {
 
-  private static final long BULK_ASYNC_DELAY_MS = 10_000L;
+  private static final long BULK_ASYNC_DELAY_MS = 20000L;
 
   private final OrderService orderService;
   private final Map<String, AsyncTask> tasks = new ConcurrentHashMap<>();

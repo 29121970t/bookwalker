@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Bookwalker Stress Endpoints">
+      <stringProp name="TestPlan.comments">Flat stress plan in the style of all-endpoints.jmx. No JSR223 or Groovy. Use it to find the throughput where errors start appearing.</stringProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="host" elementType="Argument">
+            <stringProp name="Argument.name">host</stringProp>
+            <stringProp name="Argument.value">${__P(host,localhost)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="port" elementType="Argument">
+            <stringProp name="Argument.name">port</stringProp>
+            <stringProp name="Argument.value">${__P(port,8080)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="protocol" elementType="Argument">
+            <stringProp name="Argument.name">protocol</stringProp>
+            <stringProp name="Argument.value">${__P(protocol,http)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="basePath" elementType="Argument">
+            <stringProp name="Argument.name">basePath</stringProp>
+            <stringProp name="Argument.value">${__P(basePath,)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="pageSize" elementType="Argument">
+            <stringProp name="Argument.name">pageSize</stringProp>
+            <stringProp name="Argument.value">${__P(pageSize,10)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="asyncWaitMillis" elementType="Argument">
+            <stringProp name="Argument.name">asyncWaitMillis</stringProp>
+            <stringProp name="Argument.value">${__P(asyncWaitMillis,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="uniqueSuffix" elementType="Argument">
+            <stringProp name="Argument.name">uniqueSuffix</stringProp>
+            <stringProp name="Argument.value">${__time(yyyyMMddHHmmssSSS,)}_${__threadNum}_${__Random(1000,999999,)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="publisherName" elementType="Argument">
+            <stringProp name="Argument.name">publisherName</stringProp>
+            <stringProp name="Argument.value">Perf Publisher ${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="authorName" elementType="Argument">
+            <stringProp name="Argument.name">authorName</stringProp>
+            <stringProp name="Argument.value">PerfName${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="authorSurname" elementType="Argument">
+            <stringProp name="Argument.name">authorSurname</stringProp>
+            <stringProp name="Argument.value">PerfSurname${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="clientUsername" elementType="Argument">
+            <stringProp name="Argument.name">clientUsername</stringProp>
+            <stringProp name="Argument.value">perf_${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="clientPassword" elementType="Argument">
+            <stringProp name="Argument.name">clientPassword</stringProp>
+            <stringProp name="Argument.value">Pass_${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="bookName" elementType="Argument">
+            <stringProp name="Argument.name">bookName</stringProp>
+            <stringProp name="Argument.value">Perf Book ${uniqueSuffix}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="publishDate" elementType="Argument">
+            <stringProp name="Argument.name">publishDate</stringProp>
+            <stringProp name="Argument.value">2026-04-20</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="orderDate1" elementType="Argument">
+            <stringProp name="Argument.name">orderDate1</stringProp>
+            <stringProp name="Argument.value">2026-04-21T12:00:00</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="orderDate2" elementType="Argument">
+            <stringProp name="Argument.name">orderDate2</stringProp>
+            <stringProp name="Argument.value">2026-04-21T12:00:30</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Main">
+        <stringProp name="ThreadGroup.num_threads">${__P(users,1000)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(ramp_up,11)}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <stringProp name="LoopController.loops">${__P(loops,1)}</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Defaults" enabled="true">
+          <intProp name="HTTPSampler.connect_timeout">1100</intProp>
+          <intProp name="HTTPSampler.response_timeout">1100</intProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${protocol}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation"></stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /publishers" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/publishers</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;name&quot;:&quot;${publisherName}&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="publisherId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">publisherId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /authors" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/authors</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;middleName&quot;:&quot;M&quot;,&quot;name&quot;:&quot;${authorName}&quot;,&quot;surname&quot;:&quot;${authorSurname}&quot;,&quot;bio&quot;:&quot;Stress bio ${uniqueSuffix}&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="authorId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">authorId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /clients" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/clients</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;username&quot;:&quot;${clientUsername}&quot;,&quot;password&quot;:&quot;${clientPassword}&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="clientId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">clientId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /books" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/books</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;authors&quot;:[${authorId}],&quot;name&quot;:&quot;${bookName}&quot;,&quot;publishDate&quot;:&quot;${publishDate}&quot;,&quot;pageCount&quot;:320,&quot;publisher&quot;:${publisherId},&quot;price&quot;:19.99}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="bookId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">bookId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /books" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/books?page=0&amp;size=${pageSize}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /books/{id}" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/books/${bookId}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /orders" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;client&quot;:${clientId},&quot;books&quot;:[${bookId}],&quot;date&quot;:&quot;${orderDate1}&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="orderId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">orderId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /orders/{id}" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders/${orderId}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /orders/bulk" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders/bulk</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">[{&quot;client&quot;:${clientId},&quot;books&quot;:[${bookId}],&quot;date&quot;:&quot;${orderDate1}&quot;},{&quot;client&quot;:${clientId},&quot;books&quot;:[${bookId}],&quot;date&quot;:&quot;${orderDate2}&quot;}]</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /orders/bulk-async" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders/bulk-async</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">[{&quot;client&quot;:${clientId},&quot;books&quot;:[${bookId}],&quot;date&quot;:&quot;${orderDate1}&quot;},{&quot;client&quot;:${clientId},&quot;books&quot;:[${bookId}],&quot;date&quot;:&quot;${orderDate2}&quot;}]</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="taskId" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">taskId</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.taskId</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait Async" enabled="true">
+          <stringProp name="ConstantTimer.delay">${asyncWaitMillis}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /orders/bulk-async/{taskId}" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders/bulk-async/${taskId}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /orders/bulk-async/tasks" enabled="true">
+          <stringProp name="HTTPSampler.path">${basePath}/orders/bulk-async/tasks</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
