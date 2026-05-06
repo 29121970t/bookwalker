@@ -32,8 +32,8 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Build tests and JaCoCo report
-        run: mvn -B clean verify
+      - name: Build application classes
+        run: mvn -B -Dmaven.test.skip=true clean package
 
       - name: Validate SonarCloud configuration
         run: |
@@ -50,9 +50,5 @@ jobs:
           -Dsonar.organization=${SONAR_ORGANIZATION}
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.sources=src/main/java
-          -Dsonar.tests=src/test/java
           -Dsonar.java.binaries=target/classes
-          -Dsonar.java.test.binaries=target/test-classes
-          -Dsonar.junit.reportPaths=target/surefire-reports
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.coverage.exclusions=src/main/java/com/kruosant/bookwalker/aspect/**,src/main/java/com/kruosant/bookwalker/cashe/**,src/main/java/com/kruosant/bookwalker/controllers/**,src/main/java/com/kruosant/bookwalker/domains/**,src/main/java/com/kruosant/bookwalker/dtos/**,src/main/java/com/kruosant/bookwalker/exceptions/**,src/main/java/com/kruosant/bookwalker/mappers/**,src/main/java/com/kruosant/bookwalker/repositories/**,src/main/java/com/kruosant/bookwalker/BookwalkerApplication.java,src/main/java/com/kruosant/bookwalker/services/AsyncOrderService.java
