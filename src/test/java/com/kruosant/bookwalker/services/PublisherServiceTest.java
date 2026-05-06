@@ -1,6 +1,5 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Publisher;
 import com.kruosant.bookwalker.dtos.publisher.PublisherCreateDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherFullDto;
@@ -8,213 +7,154 @@ import com.kruosant.bookwalker.dtos.publisher.PublisherPatchDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherPutDto;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.PublisherMapper;
-import com.kruosant.bookwalker.repositories.BookRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PublisherServiceTest {
-
   @Mock
-  private PublisherRepository publisherRepo;
+  private PublisherRepository publisherRepository;
   @Mock
-  private BookService bookService;
-  @Mock
-  private BookRepository bookRepo;
-  @Mock
-  private PublisherMapper mapper;
-
+  private PublisherMapper publisherMapper;
   @InjectMocks
-  private PublisherService service;
+  private PublisherService publisherService;
 
   @Test
-  void getAuthorByIdShouldReturnMappedPublisher() {
-    Publisher publisher = publisher(1L, "Pub");
-    PublisherFullDto dto = PublisherFullDto.builder().id(1L).name("Pub").build();
+  void getAllMapsPublishers() {
+    Publisher publisher = publisher("Press");
+    PublisherFullDto dto = PublisherFullDto.builder().name("Press").build();
 
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(mapper.toFullDto(publisher)).thenReturn(dto);
+    when(publisherRepository.findAll()).thenReturn(List.of(publisher));
+    when(publisherMapper.toFullDto(publisher)).thenReturn(dto);
 
-    PublisherFullDto result = service.getAuthorById(1L);
-
-    assertEquals(dto, result);
+    assertEquals(List.of(dto), publisherService.getAll());
   }
 
   @Test
-  void getAuthorByIdShouldThrowWhenMissing() {
-    when(publisherRepo.findById(1L)).thenReturn(Optional.empty());
+  void createSavesPublisher() {
+    PublisherCreateDto createDto = new PublisherCreateDto();
+    createDto.setName("Press");
+    createDto.setDescription("Books");
+    PublisherFullDto dto = PublisherFullDto.builder().name("Press").build();
 
-    assertThrows(ResourceNotFoundException.class, () -> service.getAuthorById(1L));
+    when(publisherRepository.save(any(Publisher.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(publisherMapper.toFullDto(any(Publisher.class))).thenReturn(dto);
+
+    assertEquals(dto, publisherService.create(createDto));
+    verify(publisherRepository).save(any(Publisher.class));
   }
 
   @Test
-  void createShouldSaveMappedPublisher() {
-    PublisherCreateDto dto = PublisherCreateDto.builder().name("Pub").build();
-    Publisher publisher = publisher(1L, "Pub");
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("Pub").build();
+  void getByIdMapsPublisher() {
+    Publisher publisher = publisher("Press");
+    PublisherFullDto dto = PublisherFullDto.builder().name("Press").build();
 
-    when(mapper.toAuthor(dto)).thenReturn(publisher);
-    when(publisherRepo.save(publisher)).thenReturn(publisher);
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherMapper.toFullDto(publisher)).thenReturn(dto);
 
-    PublisherFullDto result = service.create(dto);
-
-    assertEquals(fullDto, result);
+    assertEquals(dto, publisherService.getById(1L));
   }
 
   @Test
-  void getAllShouldReturnMappedPublishers() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Publisher first = publisher(1L, "Pub1");
-    Publisher second = publisher(2L, "Pub2");
-    PublisherFullDto firstDto = PublisherFullDto.builder().id(1L).name("Pub1").build();
-    PublisherFullDto secondDto = PublisherFullDto.builder().id(2L).name("Pub2").build();
+  void patchOnlyChangesProvidedFields() {
+    Publisher publisher = publisher("Press");
+    PublisherPatchDto patchDto = new PublisherPatchDto();
+    patchDto.setWebsite("https://press.example");
 
-    when(publisherRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
-    when(mapper.toFullDto(first)).thenReturn(firstDto);
-    when(mapper.toFullDto(second)).thenReturn(secondDto);
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherRepository.save(publisher)).thenReturn(publisher);
+    when(publisherMapper.toFullDto(publisher)).thenReturn(PublisherFullDto.builder().build());
 
-    Page<PublisherFullDto> result = service.getAll(pageable);
+    publisherService.patch(1L, patchDto);
 
-    assertEquals(List.of(firstDto, secondDto), result.getContent());
-    assertEquals(2, result.getTotalElements());
+    assertEquals("Press", publisher.getName());
+    assertEquals("https://press.example", publisher.getWebsite());
   }
 
   @Test
-  void deleteShouldRemovePublisher() {
-    Publisher publisher = publisher(1L, "Pub");
+  void patchChangesEveryProvidedField() {
+    Publisher publisher = publisher("Press");
+    PublisherPatchDto patchDto = new PublisherPatchDto();
+    patchDto.setName("New");
+    patchDto.setDescription("New description");
+    patchDto.setCountry("US");
+    patchDto.setWebsite("https://press.example");
 
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherRepository.save(publisher)).thenReturn(publisher);
+    when(publisherMapper.toFullDto(publisher)).thenReturn(PublisherFullDto.builder().build());
 
-    service.delete(1L);
+    publisherService.patch(1L, patchDto);
 
-    verify(publisherRepo).delete(publisher);
-  }
-
-  @Test
-  void updatePatchShouldApplyNameAndBooks() {
-    Publisher publisher = publisher(1L, "Old");
-    Book oldBook = book(100L);
-    oldBook.setPublisher(publisher);
-    publisher.setBooks(new HashSet<>(Set.of(oldBook)));
-    Book newBook = book(2L);
-    PublisherPatchDto dto = PublisherPatchDto.builder().name("New").books(List.of(2L)).build();
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("New").build();
-
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(bookRepo.findById(2L)).thenReturn(Optional.of(newBook));
-    when(publisherRepo.save(publisher)).thenReturn(publisher);
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
-
-    PublisherFullDto result = service.update(1L, dto);
-
-    assertNull(oldBook.getPublisher());
     assertEquals("New", publisher.getName());
-    verify(bookService).setPublisher(newBook, publisher);
-    assertEquals(fullDto, result);
+    assertEquals("New description", publisher.getDescription());
+    assertEquals("US", publisher.getCountry());
+    assertEquals("https://press.example", publisher.getWebsite());
   }
 
   @Test
-  void updatePatchShouldSkipOptionalFieldsWhenMissing() {
-    Publisher publisher = publisher(1L, "Old");
-    PublisherPatchDto dto = PublisherPatchDto.builder().build();
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("Old").build();
+  void patchLeavesNullFieldsUntouched() {
+    Publisher publisher = publisher("Press");
+    PublisherPatchDto patchDto = new PublisherPatchDto();
+    patchDto.setName("New");
 
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(publisherRepo.save(publisher)).thenReturn(publisher);
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherRepository.save(publisher)).thenReturn(publisher);
+    when(publisherMapper.toFullDto(publisher)).thenReturn(PublisherFullDto.builder().build());
 
-    PublisherFullDto result = service.update(1L, dto);
+    publisherService.patch(1L, patchDto);
 
-    assertEquals("Old", publisher.getName());
-    verifyNoInteractions(bookService, bookRepo);
-    assertEquals(fullDto, result);
+    assertEquals("Books", publisher.getDescription());
   }
 
   @Test
-  void updatePutShouldReplaceBooksAndName() {
-    Publisher publisher = publisher(1L, "Old");
-    Book oldBook = book(100L);
-    oldBook.setPublisher(publisher);
-    publisher.setBooks(new HashSet<>(Set.of(oldBook)));
-    Book firstNew = book(2L);
-    Book secondNew = book(3L);
-    PublisherPutDto dto = PublisherPutDto.builder().name("New").books(List.of(2L, 3L)).build();
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("New").build();
+  void putReplacesFields() {
+    Publisher publisher = publisher("Old");
+    PublisherPutDto putDto = new PublisherPutDto();
+    putDto.setName("New");
+    putDto.setCountry("US");
 
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(bookRepo.findById(2L)).thenReturn(Optional.of(firstNew));
-    when(bookRepo.findById(3L)).thenReturn(Optional.of(secondNew));
-    when(publisherRepo.save(publisher)).thenReturn(publisher);
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
+    when(publisherRepository.save(publisher)).thenReturn(publisher);
+    when(publisherMapper.toFullDto(publisher)).thenReturn(PublisherFullDto.builder().build());
 
-    PublisherFullDto result = service.update(1L, dto);
+    publisherService.put(1L, putDto);
 
-    assertNull(oldBook.getPublisher());
     assertEquals("New", publisher.getName());
-    verify(bookService).setPublisher(firstNew, publisher);
-    verify(bookService).setPublisher(secondNew, publisher);
-    assertEquals(fullDto, result);
+    assertEquals("US", publisher.getCountry());
   }
 
   @Test
-  void addBookShouldAssignPublisherToBook() {
-    Book book = book(10L);
-    Publisher publisher = publisher(1L, "Pub");
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("Pub").build();
+  void getByIdThrowsWhenMissing() {
+    when(publisherRepository.findById(1L)).thenReturn(Optional.empty());
 
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(book));
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
-
-    PublisherFullDto result = service.addBook(10L, 1L);
-
-    assertEquals(publisher, book.getPublisher());
-    verify(bookRepo).save(book);
-    assertEquals(fullDto, result);
+    assertThrows(ResourceNotFoundException.class, () -> publisherService.getById(1L));
   }
 
   @Test
-  void deleteBookShouldDeleteBookAndReturnPublisher() {
-    Publisher publisher = publisher(1L, "Pub");
-    PublisherFullDto fullDto = PublisherFullDto.builder().id(1L).name("Pub").build();
+  void deleteRemovesExistingPublisher() {
+    Publisher publisher = publisher("Press");
+    when(publisherRepository.findById(1L)).thenReturn(Optional.of(publisher));
 
-    when(publisherRepo.findById(1L)).thenReturn(Optional.of(publisher));
-    when(mapper.toFullDto(publisher)).thenReturn(fullDto);
+    publisherService.delete(1L);
 
-    PublisherFullDto result = service.deleteBook(10L, 1L);
-
-    verify(bookRepo).deleteById(10L);
-    assertEquals(fullDto, result);
+    verify(publisherRepository).delete(publisher);
   }
 
-  private static Publisher publisher(Long id, String name) {
-    Publisher publisher = new Publisher();
-    publisher.setId(id);
-    publisher.setName(name);
-    publisher.setBooks(new HashSet<>());
-    return publisher;
-  }
-
-  private static Book book(Long id) {
-    Book book = new Book();
-    book.setId(id);
-    book.setAuthors(new HashSet<>());
-    return book;
+  private static Publisher publisher(String name) {
+    return Publisher.builder().id(1L).name(name).description("Books").build();
   }
 }

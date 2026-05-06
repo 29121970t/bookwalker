@@ -1,14 +1,13 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.cashe.OrderSearchCache;
 import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.domains.Client;
 import com.kruosant.bookwalker.domains.Order;
 import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.dtos.order.OrderFullDto;
+import com.kruosant.bookwalker.dtos.order.OrderItemRequestDto;
 import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
 import com.kruosant.bookwalker.dtos.order.OrderPutDto;
-import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.OrderMapper;
 import com.kruosant.bookwalker.repositories.BookRepository;
@@ -16,315 +15,244 @@ import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.repositories.OrderRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
-
   @Mock
-  private OrderRepository orderRepo;
+  private OrderRepository orderRepository;
   @Mock
-  private ClientRepository clientRepo;
+  private ClientRepository clientRepository;
   @Mock
-  private BookRepository bookRepo;
+  private BookRepository bookRepository;
   @Mock
-  private OrderMapper mapper;
-  @Mock
-  private OrderSearchCache cache;
-
+  private OrderMapper orderMapper;
   @InjectMocks
-  private OrderService service;
+  private OrderService orderService;
 
   @Test
-  void getAllShouldReturnMappedOrders() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Order first = new Order();
-    first.setId(1L);
-    Order second = new Order();
-    second.setId(2L);
-    OrderFullDto firstDto = OrderFullDto.builder().id(1L).build();
-    OrderFullDto secondDto = OrderFullDto.builder().id(2L).build();
-
-    when(orderRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
-    when(mapper.toFullDto(first)).thenReturn(firstDto);
-    when(mapper.toFullDto(second)).thenReturn(secondDto);
-
-    Page<OrderFullDto> result = service.getAll(pageable);
-
-    assertEquals(List.of(firstDto, secondDto), result.getContent());
-    assertEquals(2, result.getTotalElements());
-  }
-
-  @Test
-  void getByIdShouldReturnMappedOrder() {
-    Order order = new Order();
-    order.setId(1L);
+  void getForClientMapsOrders() {
+    Order order = Order.builder().id(1L).build();
     OrderFullDto dto = OrderFullDto.builder().id(1L).build();
 
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
-    when(mapper.toFullDto(order)).thenReturn(dto);
+    when(orderRepository.findAllByClientId(1L)).thenReturn(List.of(order));
+    when(orderMapper.toFullDto(order)).thenReturn(dto);
 
-    OrderFullDto result = service.getById(1L);
-
-    assertEquals(dto, result);
+    assertEquals(List.of(dto), orderService.getForClient(1L));
   }
 
   @Test
-  void getOrdersWithBooksOfShouldUseCacheHit() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Order order = new Order();
-    order.setId(1L);
-    Page<Order> page = new PageImpl<>(List.of(order));
+  void getAllMapsOrders() {
+    Order order = Order.builder().id(1L).build();
     OrderFullDto dto = OrderFullDto.builder().id(1L).build();
 
-    when(cache.get(any())).thenReturn(Optional.of(page));
-    when(mapper.toFullDto(order)).thenReturn(dto);
+    when(orderRepository.findAll()).thenReturn(List.of(order));
+    when(orderMapper.toFullDto(order)).thenReturn(dto);
 
-    Page<OrderFullDto> result = service.getOrdersWithBooksOf("Surname", pageable);
-
-    assertEquals(List.of(dto), result.getContent());
-    verify(orderRepo, never()).findByAuthorSurname(any(), any());
+    assertEquals(List.of(dto), orderService.getAll());
   }
 
   @Test
-  void getOrdersWithBooksOfShouldQueryRepositoryOnCacheMiss() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Order order = new Order();
-    order.setId(1L);
-    Page<Order> page = new PageImpl<>(List.of(order));
+  void getByIdMapsOrder() {
+    Order order = Order.builder().id(1L).build();
     OrderFullDto dto = OrderFullDto.builder().id(1L).build();
 
-    when(cache.get(any())).thenReturn(Optional.empty());
-    when(orderRepo.findByAuthorSurname("Surname", pageable)).thenReturn(page);
-    when(mapper.toFullDto(order)).thenReturn(dto);
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(orderMapper.toFullDto(order)).thenReturn(dto);
 
-    Page<OrderFullDto> result = service.getOrdersWithBooksOf("Surname", pageable);
-
-    assertEquals(List.of(dto), result.getContent());
-    verify(cache).save(any(), eq(page));
+    assertEquals(dto, orderService.getById(1L));
   }
 
   @Test
-  void createShouldUseDateFromDto() {
-    Client client = client(1L);
-    Book book = book(10L);
-    LocalDateTime date = LocalDateTime.of(2026, 4, 2, 9, 30);
-    OrderCreateDto dto = createDto(1L, List.of(10L), date);
-    Order savedOrder = new Order();
-    savedOrder.setId(77L);
-    savedOrder.setDate(date);
+  void createBuildsItemsAndTotal() {
+    OrderCreateDto dto = createDto();
+    Book book = Book.builder().id(1L).price(BigDecimal.TEN).build();
+    OrderFullDto fullDto = OrderFullDto.builder().total(BigDecimal.valueOf(20)).build();
 
-    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(book));
-    when(orderRepo.save(any(Order.class))).thenReturn(savedOrder);
-    when(mapper.toFullDto(savedOrder)).thenReturn(OrderFullDto.builder().id(77L).date(date).build());
+    when(clientRepository.findById(1L)).thenReturn(Optional.of(Client.builder().id(1L).build()));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(orderMapper.toFullDto(any(Order.class))).thenReturn(fullDto);
 
-    service.create(dto);
-
-    ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
-    verify(orderRepo).save(captor.capture());
-    assertEquals(date, captor.getValue().getDate());
-    assertEquals(1, captor.getValue().getBooks().size());
-    verify(cache).invalidate();
+    assertEquals(fullDto, orderService.create(dto));
+    verify(orderRepository).save(any(Order.class));
   }
 
   @Test
-  void createShouldUseNowWhenDateIsNullAndAllowNullBooks() {
-    Client client = client(1L);
-    OrderCreateDto dto = createDto(1L, null, null);
-    Order savedOrder = new Order();
-    savedOrder.setId(77L);
+  void createUsesProvidedDate() {
+    OrderCreateDto dto = createDto();
+    LocalDateTime date = LocalDateTime.of(2026, 5, 6, 7, 0);
+    dto.setDate(date);
 
-    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
-    when(orderRepo.save(any(Order.class))).thenReturn(savedOrder);
-    when(mapper.toFullDto(savedOrder)).thenReturn(OrderFullDto.builder().id(77L).build());
+    when(clientRepository.findById(1L)).thenReturn(Optional.of(Client.builder().id(1L).build()));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).price(BigDecimal.ONE).build()));
+    when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(orderMapper.toFullDto(any(Order.class))).thenReturn(OrderFullDto.builder().build());
 
-    service.create(dto);
+    orderService.create(dto);
 
-    ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
-    verify(orderRepo).save(captor.capture());
-    assertNotNull(captor.getValue().getDate());
-    assertEquals(Set.of(), captor.getValue().getBooks());
+    verify(orderRepository).save(org.mockito.ArgumentMatchers.argThat(order -> date.equals(order.getDate())));
   }
 
   @Test
-  void createBulkTransactionalShouldSaveAllOrders() {
-    Client client = client(1L);
-    Book firstBook = book(10L);
-    Book secondBook = book(20L);
-    OrderCreateDto firstDto = createDto(1L, List.of(10L), LocalDateTime.of(2026, 4, 1, 10, 0));
-    OrderCreateDto secondDto = createDto(1L, List.of(10L, 20L), LocalDateTime.of(2026, 4, 1, 11, 0));
-    AtomicLong ids = new AtomicLong(100L);
+  void createBulkCreatesEveryOrder() {
+    OrderCreateDto dto = createDto();
+    when(clientRepository.findById(1L)).thenReturn(Optional.of(Client.builder().id(1L).build()));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).price(BigDecimal.ONE).build()));
+    when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(orderMapper.toFullDto(any(Order.class))).thenReturn(OrderFullDto.builder().build());
 
-    when(clientRepo.findById(1L)).thenReturn(Optional.of(client));
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(firstBook));
-    when(bookRepo.findById(20L)).thenReturn(Optional.of(secondBook));
-    when(orderRepo.save(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      order.setId(ids.getAndIncrement());
-      return order;
-    });
-    when(mapper.toFullDto(any(Order.class))).thenAnswer(invocation -> {
-      Order order = invocation.getArgument(0);
-      return OrderFullDto.builder().id(order.getId()).date(order.getDate()).build();
-    });
-
-    List<OrderFullDto> result = service.createBulkTransactional(List.of(firstDto, secondDto));
-
-    assertEquals(2, result.size());
-    assertEquals(List.of(100L, 101L), result.stream().map(OrderFullDto::getId).toList());
-    verify(orderRepo, times(2)).save(any(Order.class));
-    verify(cache).invalidate();
+    assertEquals(2, orderService.createBulkTransactional(List.of(dto, dto)).size());
   }
 
   @Test
-  void createBulkTransactionalShouldRejectEmptyPayload() {
-    List<OrderCreateDto> emptyOrders = List.of();
+  void patchReplacesItemsAndRecalculatesTotal() {
+    Order order = Order.builder().id(1L).items(new java.util.ArrayList<>()).build();
+    OrderPatchDto dto = new OrderPatchDto();
+    dto.setStatus("Paid");
+    dto.setItems(List.of(item(1L, 3)));
 
-    assertThrows(BadRequestException.class, () -> service.createBulkTransactional(emptyOrders));
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).price(BigDecimal.valueOf(5)).build()));
+    when(orderRepository.save(order)).thenReturn(order);
+    when(orderMapper.toFullDto(order)).thenReturn(OrderFullDto.builder().status("Paid").build());
 
-    verify(cache).invalidate();
-    verifyNoInteractions(orderRepo, clientRepo, bookRepo, mapper);
+    orderService.update(1L, dto);
+
+    assertEquals("Paid", order.getStatus());
+    assertEquals(BigDecimal.valueOf(15), order.getTotal());
+    assertEquals(1, order.getItems().size());
   }
 
   @Test
-  void createBulkTransactionalShouldRejectNullPayload() {
-    assertThrows(BadRequestException.class, () -> service.createBulkTransactional(null));
+  void patchChangesEveryProvidedField() {
+    LocalDateTime date = LocalDateTime.of(2026, 5, 6, 5, 0);
+    Order order = Order.builder().id(1L).items(new java.util.ArrayList<>()).build();
+    OrderPatchDto dto = new OrderPatchDto();
+    dto.setDate(date);
+    dto.setStatus("Paid");
+    dto.setPaymentMethod("CARD");
+    dto.setDeliveryCity("Minsk");
+    dto.setItems(List.of(item(1L, 1)));
 
-    verify(cache).invalidate();
-    verifyNoInteractions(orderRepo, clientRepo, bookRepo, mapper);
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).price(BigDecimal.ONE).build()));
+    when(orderRepository.save(order)).thenReturn(order);
+    when(orderMapper.toFullDto(order)).thenReturn(OrderFullDto.builder().build());
+
+    orderService.update(1L, dto);
+
+    assertEquals(date, order.getDate());
+    assertEquals("CARD", order.getPaymentMethod());
+    assertEquals("Minsk", order.getDeliveryCity());
   }
 
   @Test
-  void deleteShouldRemoveOrder() {
-    Order order = new Order();
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
+  void patchLeavesNullFieldsUntouched() {
+    Order order = Order.builder().id(1L).status("Processing").items(new java.util.ArrayList<>()).build();
+    OrderPatchDto dto = new OrderPatchDto();
 
-    service.delete(1L);
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(orderRepository.save(order)).thenReturn(order);
+    when(orderMapper.toFullDto(order)).thenReturn(OrderFullDto.builder().build());
 
-    verify(cache).invalidate();
-    verify(orderRepo).delete(order);
+    orderService.update(1L, dto);
+
+    assertEquals("Processing", order.getStatus());
+    assertTrue(order.getItems().isEmpty());
   }
 
   @Test
-  void updatePatchShouldReplaceBooksWhenProvided() {
-    Order order = new Order();
-    Book first = book(10L);
-    Book second = book(20L);
-    OrderPatchDto dto = OrderPatchDto.builder().books(List.of(10L, 20L)).build();
-    OrderFullDto fullDto = OrderFullDto.builder().id(1L).build();
+  void putKeepsExistingDateWhenMissing() {
+    LocalDateTime date = LocalDateTime.of(2026, 5, 6, 4, 0);
+    Order order = Order.builder().id(1L).date(date).items(new java.util.ArrayList<>()).build();
+    OrderPutDto dto = new OrderPutDto();
+    dto.setStatus("Delivered");
+    dto.setItems(List.of(item(1L, 1)));
 
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(first));
-    when(bookRepo.findById(20L)).thenReturn(Optional.of(second));
-    when(orderRepo.save(order)).thenReturn(order);
-    when(mapper.toFullDto(order)).thenReturn(fullDto);
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).discountPrice(BigDecimal.valueOf(7)).price(BigDecimal.TEN).build()));
+    when(orderRepository.save(order)).thenReturn(order);
+    when(orderMapper.toFullDto(order)).thenReturn(OrderFullDto.builder().build());
 
-    OrderFullDto result = service.update(1L, dto);
+    orderService.update(1L, dto);
 
-    verify(cache).invalidate();
-    assertEquals(Set.of(first, second), order.getBooks());
-    assertEquals(fullDto, result);
+    assertEquals(date, order.getDate());
+    assertEquals(BigDecimal.valueOf(7), order.getTotal());
   }
 
   @Test
-  void updatePatchShouldKeepBooksWhenMissing() {
-    Order order = new Order();
-    Book existing = book(10L);
-    order.setBooks(Set.of(existing));
-    OrderPatchDto dto = OrderPatchDto.builder().build();
-    OrderFullDto fullDto = OrderFullDto.builder().id(1L).build();
+  void putUsesProvidedDate() {
+    LocalDateTime date = LocalDateTime.of(2026, 5, 6, 6, 0);
+    Order order = Order.builder().id(1L).items(new java.util.ArrayList<>()).build();
+    OrderPutDto dto = new OrderPutDto();
+    dto.setDate(date);
+    dto.setStatus("Delivered");
+    dto.setPaymentMethod("CASH");
+    dto.setDeliveryCity("Minsk");
+    dto.setItems(List.of(item(1L, 1)));
 
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
-    when(orderRepo.save(order)).thenReturn(order);
-    when(mapper.toFullDto(order)).thenReturn(fullDto);
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(Book.builder().id(1L).price(BigDecimal.ONE).build()));
+    when(orderRepository.save(order)).thenReturn(order);
+    when(orderMapper.toFullDto(order)).thenReturn(OrderFullDto.builder().build());
 
-    OrderFullDto result = service.update(1L, dto);
+    orderService.update(1L, dto);
 
-    assertEquals(Set.of(existing), order.getBooks());
-    assertEquals(fullDto, result);
+    assertEquals(date, order.getDate());
+    assertEquals("CASH", order.getPaymentMethod());
   }
 
   @Test
-  void updatePutShouldAcceptEmptyBookList() {
-    Order order = new Order();
-    OrderPutDto dto = OrderPutDto.builder().books(List.of()).build();
-    OrderFullDto fullDto = OrderFullDto.builder().id(1L).build();
+  void deleteRemovesExistingOrder() {
+    Order order = Order.builder().id(1L).build();
+    when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
-    when(orderRepo.save(order)).thenReturn(order);
-    when(mapper.toFullDto(order)).thenReturn(fullDto);
+    orderService.delete(1L);
 
-    OrderFullDto result = service.update(1L, dto);
-
-    assertEquals(Set.of(), order.getBooks());
-    assertEquals(fullDto, result);
+    verify(orderRepository).delete(order);
   }
 
   @Test
-  void updatePutShouldTreatNullBooksAsEmptySet() {
-    Order order = new Order();
-    OrderPutDto dto = OrderPutDto.builder().books(null).build();
-    OrderFullDto fullDto = OrderFullDto.builder().id(1L).build();
+  void getByIdThrowsWhenMissing() {
+    when(orderRepository.findById(1L)).thenReturn(Optional.empty());
 
-    when(orderRepo.findById(1L)).thenReturn(Optional.of(order));
-    when(orderRepo.save(order)).thenReturn(order);
-    when(mapper.toFullDto(order)).thenReturn(fullDto);
-
-    OrderFullDto result = service.update(1L, dto);
-
-    verify(cache).invalidate();
-    assertEquals(Set.of(), order.getBooks());
-    assertEquals(fullDto, result);
+    assertThrows(ResourceNotFoundException.class, () -> orderService.getById(1L));
   }
 
   @Test
-  void createShouldThrowWhenClientMissing() {
-    OrderCreateDto dto = createDto(99L, List.of(10L), LocalDateTime.of(2026, 4, 2, 12, 0));
-    when(clientRepo.findById(99L)).thenReturn(Optional.empty());
+  void createThrowsWhenClientMissing() {
+    when(clientRepository.findById(1L)).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
-
-    verify(cache).invalidate();
-    verify(orderRepo, never()).save(any());
+    assertThrows(ResourceNotFoundException.class, () -> orderService.create(createDto()));
   }
 
-  private static Client client(Long id) {
-    Client client = new Client();
-    client.setId(id);
-    client.setUsername("reader-" + id);
-    return client;
+  private static OrderCreateDto createDto() {
+    OrderCreateDto dto = new OrderCreateDto();
+    dto.setClientId(1L);
+    dto.setStatus("Processing");
+    dto.setItems(List.of(item(1L, 2)));
+    return dto;
   }
 
-  private static Book book(Long id) {
-    Book book = new Book();
-    book.setId(id);
-    book.setName("Book " + id);
-    return book;
-  }
-
-  private static OrderCreateDto createDto(Long clientId, List<Long> books, LocalDateTime date) {
-    return OrderCreateDto.builder()
-        .client(clientId)
-        .books(books)
-        .date(date)
-        .build();
+  private static OrderItemRequestDto item(Long bookId, int quantity) {
+    OrderItemRequestDto item = new OrderItemRequestDto();
+    item.setBookId(bookId);
+    item.setQuantity(quantity);
+    return item;
   }
 }

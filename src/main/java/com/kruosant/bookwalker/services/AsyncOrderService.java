@@ -5,7 +5,7 @@ import com.kruosant.bookwalker.domains.AsyncTaskStatus;
 import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.exceptions.BadRequestException;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,15 +19,25 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@AllArgsConstructor
 public class AsyncOrderService {
 
   private static final long BULK_ASYNC_DELAY_MS = 20000L;
 
   private final OrderService orderService;
-  private final Map<String, AsyncTask> tasks = new ConcurrentHashMap<>();
-  private final Executor delayedExecutor =
-      CompletableFuture.delayedExecutor(BULK_ASYNC_DELAY_MS, TimeUnit.MILLISECONDS);
+  private final Map<String, AsyncTask> tasks;
+  private final Executor delayedExecutor;
+
+  @Autowired
+  public AsyncOrderService(OrderService orderService) {
+    this(orderService, new ConcurrentHashMap<>(),
+        CompletableFuture.delayedExecutor(BULK_ASYNC_DELAY_MS, TimeUnit.MILLISECONDS));
+  }
+
+  AsyncOrderService(OrderService orderService, Map<String, AsyncTask> tasks, Executor delayedExecutor) {
+    this.orderService = orderService;
+    this.tasks = tasks;
+    this.delayedExecutor = delayedExecutor;
+  }
 
   public AsyncTask createBulkAsync(List<OrderCreateDto> dtos) {
     if (dtos == null || dtos.isEmpty()) {

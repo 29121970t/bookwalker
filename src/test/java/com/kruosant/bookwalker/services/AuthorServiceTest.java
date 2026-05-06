@@ -1,8 +1,6 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.cashe.OrderSearchCache;
 import com.kruosant.bookwalker.domains.Author;
-import com.kruosant.bookwalker.domains.Book;
 import com.kruosant.bookwalker.dtos.author.AuthorCreateDto;
 import com.kruosant.bookwalker.dtos.author.AuthorFullDto;
 import com.kruosant.bookwalker.dtos.author.AuthorPatchDto;
@@ -10,300 +8,155 @@ import com.kruosant.bookwalker.dtos.author.AuthorPutDto;
 import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.AuthorMapper;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
-import com.kruosant.bookwalker.repositories.BookRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthorServiceTest {
-
   @Mock
-  private AuthorRepository authorRepo;
+  private AuthorRepository authorRepository;
   @Mock
-  private BookService bookService;
-  @Mock
-  private AuthorMapper mapper;
-  @Mock
-  private BookRepository bookRepo;
-  @Mock
-  private OrderSearchCache cache;
-
+  private AuthorMapper authorMapper;
   @InjectMocks
-  private AuthorService service;
+  private AuthorService authorService;
 
   @Test
-  void getByIdShouldReturnAuthor() {
-    Author author = author(1L);
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
+  void getAllMapsAuthors() {
+    Author author = author("Jane");
+    AuthorFullDto dto = AuthorFullDto.builder().name("Jane").build();
 
-    Author result = service.getById(1L);
+    when(authorRepository.findAll()).thenReturn(List.of(author));
+    when(authorMapper.toFullDto(author)).thenReturn(dto);
 
-    assertSame(author, result);
+    assertEquals(List.of(dto), authorService.getAll());
   }
 
   @Test
-  void getFullDtoByIdShouldReturnMappedAuthor() {
-    Author author = author(1L);
-    AuthorFullDto dto = AuthorFullDto.builder().id(1L).name("Author").build();
+  void createSavesNewAuthor() {
+    AuthorCreateDto createDto = new AuthorCreateDto();
+    createDto.setName("Jane");
+    createDto.setBio("Bio");
+    AuthorFullDto dto = AuthorFullDto.builder().name("Jane").build();
 
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(mapper.toFullDto(author)).thenReturn(dto);
+    when(authorRepository.save(any(Author.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(authorMapper.toFullDto(any(Author.class))).thenReturn(dto);
 
-    AuthorFullDto result = service.getFullDtoById(1L);
+    AuthorFullDto result = authorService.create(createDto);
 
     assertEquals(dto, result);
+    verify(authorRepository).save(any(Author.class));
   }
 
   @Test
-  void createFromCreateDtoShouldSaveAuthor() {
-    AuthorCreateDto dto = AuthorCreateDto.builder()
-        .name("Name")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .build();
-    Author author = author(1L);
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Name").build();
+  void getByIdMapsAuthor() {
+    Author author = author("Jane");
+    AuthorFullDto dto = AuthorFullDto.builder().name("Jane").build();
 
-    when(mapper.toAuthor(dto)).thenReturn(author);
-    when(authorRepo.save(author)).thenReturn(author);
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+    when(authorMapper.toFullDto(author)).thenReturn(dto);
 
-    AuthorFullDto result = service.create(dto);
-
-    verify(cache).invalidate();
-    assertEquals(fullDto, result);
+    assertEquals(dto, authorService.getById(1L));
   }
 
   @Test
-  void createFromPutDtoShouldAttachBooks() {
-    AuthorPutDto dto = AuthorPutDto.builder()
-        .name("Name")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .books(Set.of(10L, 20L))
-        .build();
-    Author newAuthor = author(1L);
-    Book firstBook = book(10L);
-    Book secondBook = book(20L);
+  void patchOnlyChangesProvidedFields() {
+    Author author = author("Jane");
+    AuthorPatchDto patchDto = new AuthorPatchDto();
+    patchDto.setBio("Updated bio");
 
-    when(bookRepo.findById(10L)).thenReturn(Optional.of(firstBook));
-    when(bookRepo.findById(20L)).thenReturn(Optional.of(secondBook));
-    when(mapper.toAuthor(dto)).thenReturn(newAuthor);
-    when(authorRepo.save(newAuthor)).thenReturn(newAuthor);
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+    when(authorRepository.save(author)).thenReturn(author);
+    when(authorMapper.toFullDto(author)).thenReturn(AuthorFullDto.builder().bio("Updated bio").build());
 
-    Author result = service.create(dto);
+    authorService.patch(1L, patchDto);
 
-    verify(cache).invalidate();
-    assertSame(newAuthor, result);
-    assertEquals(Set.of(firstBook, secondBook), result.getBooks());
+    assertEquals("Jane", author.getName());
+    assertEquals("Updated bio", author.getBio());
   }
 
   @Test
-  void createFromPutDtoShouldThrowWhenBookMissing() {
-    AuthorPutDto dto = AuthorPutDto.builder()
-        .name("Name")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .books(Set.of(10L))
-        .build();
+  void patchChangesEveryProvidedField() {
+    Author author = author("Jane");
+    AuthorPatchDto patchDto = new AuthorPatchDto();
+    patchDto.setName("Janet");
+    patchDto.setBio("New bio");
+    patchDto.setCountry("US");
+    patchDto.setWebsite("https://author.example");
 
-    when(bookRepo.findById(10L)).thenReturn(Optional.empty());
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+    when(authorRepository.save(author)).thenReturn(author);
+    when(authorMapper.toFullDto(author)).thenReturn(AuthorFullDto.builder().build());
 
-    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
+    authorService.patch(1L, patchDto);
+
+    assertEquals("Janet", author.getName());
+    assertEquals("New bio", author.getBio());
+    assertEquals("US", author.getCountry());
+    assertEquals("https://author.example", author.getWebsite());
   }
 
   @Test
-  void getAllFullDtoShouldReturnMappedAuthors() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Author first = author(1L);
-    Author second = author(2L);
-    AuthorFullDto firstDto = AuthorFullDto.builder().id(1L).name("First").build();
-    AuthorFullDto secondDto = AuthorFullDto.builder().id(2L).name("Second").build();
+  void patchLeavesNullFieldsUntouched() {
+    Author author = author("Jane");
+    AuthorPatchDto patchDto = new AuthorPatchDto();
+    patchDto.setName("Janet");
 
-    when(authorRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
-    when(mapper.toFullDto(first)).thenReturn(firstDto);
-    when(mapper.toFullDto(second)).thenReturn(secondDto);
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+    when(authorRepository.save(author)).thenReturn(author);
+    when(authorMapper.toFullDto(author)).thenReturn(AuthorFullDto.builder().build());
 
-    Page<AuthorFullDto> result = service.getAllFullDto(pageable);
+    authorService.patch(1L, patchDto);
 
-    assertEquals(List.of(firstDto, secondDto), result.getContent());
-    assertEquals(2, result.getTotalElements());
+    assertEquals("Bio", author.getBio());
   }
 
   @Test
-  void deleteShouldRemoveAuthorFromAllBooks() {
-    Author author = author(1L);
-    Book firstBook = book(10L);
-    Book secondBook = book(20L);
-    author.setBooks(new HashSet<>(Set.of(firstBook, secondBook)));
+  void putReplacesFields() {
+    Author author = author("Old");
+    AuthorPutDto putDto = new AuthorPutDto();
+    putDto.setName("New");
+    putDto.setCountry("UK");
 
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
+    when(authorRepository.save(author)).thenReturn(author);
+    when(authorMapper.toFullDto(author)).thenReturn(AuthorFullDto.builder().name("New").build());
 
-    service.delete(1L);
+    authorService.put(1L, putDto);
 
-    verify(cache).invalidate();
-    verify(bookService).removeAuthor(firstBook, author);
-    verify(bookService).removeAuthor(secondBook, author);
-    verify(authorRepo).delete(author);
+    assertEquals("New", author.getName());
+    assertEquals("UK", author.getCountry());
   }
 
   @Test
-  void patchShouldUpdateAuthorAndBooksWhenProvided() {
-    Author author = author(1L);
-    Book existingBook = book(10L);
-    author.setBooks(new HashSet<>(Set.of(existingBook)));
-    AuthorPatchDto dto = AuthorPatchDto.builder().books(Set.of(20L, 30L)).name("Updated").build();
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Updated").build();
+  void deleteThrowsWhenMissing() {
+    when(authorRepository.findById(1L)).thenReturn(Optional.empty());
 
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(authorRepo.save(author)).thenReturn(author);
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
-
-    AuthorFullDto result = service.patch(1L, dto);
-
-    verify(cache).invalidate();
-    verify(bookService).removeAuthor(existingBook, author);
-    verify(mapper).patch(author, dto);
-    verify(bookService).addAuthor(20L, 1L);
-    verify(bookService).addAuthor(30L, 1L);
-    assertEquals(fullDto, result);
+    assertThrows(ResourceNotFoundException.class, () -> authorService.delete(1L));
   }
 
   @Test
-  void patchShouldSkipAddingBooksWhenNotProvided() {
-    Author author = author(1L);
-    Book existingBook = book(10L);
-    author.setBooks(new HashSet<>(Set.of(existingBook)));
-    AuthorPatchDto dto = AuthorPatchDto.builder().name("Updated").build();
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Updated").build();
+  void deleteRemovesExistingAuthor() {
+    Author author = author("Jane");
+    when(authorRepository.findById(1L)).thenReturn(Optional.of(author));
 
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(authorRepo.save(author)).thenReturn(author);
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
+    authorService.delete(1L);
 
-    AuthorFullDto result = service.patch(1L, dto);
-
-    verify(bookService).removeAuthor(existingBook, author);
-    verify(mapper).patch(author, dto);
-    assertEquals(fullDto, result);
+    verify(authorRepository).delete(author);
   }
 
-  @Test
-  void putShouldReplaceAuthorDataAndBooks() {
-    Author author = author(1L);
-    Book existingBook = book(10L);
-    author.setBooks(new HashSet<>(Set.of(existingBook)));
-    AuthorPutDto dto = AuthorPutDto.builder()
-        .name("Updated")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .books(Set.of(20L, 30L))
-        .build();
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Updated").build();
-
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(authorRepo.save(author)).thenReturn(author);
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
-
-    AuthorFullDto result = service.put(1L, dto);
-
-    verify(cache).invalidate();
-    verify(bookService).removeAuthor(existingBook, author);
-    verify(mapper).put(author, dto);
-    verify(bookService).addAuthor(20L, 1L);
-    verify(bookService).addAuthor(30L, 1L);
-    assertEquals(fullDto, result);
-  }
-
-  @Test
-  void putShouldSkipAddingBooksWhenMissing() {
-    Author author = author(1L);
-    Book existingBook = book(10L);
-    author.setBooks(new HashSet<>(Set.of(existingBook)));
-    AuthorPutDto dto = AuthorPutDto.builder()
-        .name("Updated")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .books(null)
-        .build();
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Updated").build();
-
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(authorRepo.save(author)).thenReturn(author);
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
-
-    AuthorFullDto result = service.put(1L, dto);
-
-    verify(bookService).removeAuthor(existingBook, author);
-    verify(mapper).put(author, dto);
-    assertEquals(fullDto, result);
-  }
-
-  @Test
-  void addBookShouldReturnUpdatedAuthor() {
-    Author author = author(1L);
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Author").build();
-
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
-
-    AuthorFullDto result = service.addBook(10L, 1L);
-
-    verify(cache).invalidate();
-    verify(bookService).addAuthor(10L, 1L);
-    assertEquals(fullDto, result);
-  }
-
-  @Test
-  void deleteBookShouldReturnUpdatedAuthor() {
-    Author author = author(1L);
-    AuthorFullDto fullDto = AuthorFullDto.builder().id(1L).name("Author").build();
-
-    when(authorRepo.findById(1L)).thenReturn(Optional.of(author));
-    when(mapper.toFullDto(author)).thenReturn(fullDto);
-
-    AuthorFullDto result = service.deleteBook(10L, 1L);
-
-    verify(cache).invalidate();
-    verify(bookService).removeAuthor(10L, 1L);
-    assertEquals(fullDto, result);
-  }
-
-  private static Author author(Long id) {
-    return Author.builder()
-        .id(id)
-        .name("Author")
-        .middleName("Middle")
-        .surname("Surname")
-        .bio("Bio")
-        .books(new HashSet<>())
-        .build();
-  }
-
-  private static Book book(Long id) {
-    Book book = new Book();
-    book.setId(id);
-    book.setAuthors(new HashSet<>());
-    return book;
+  private static Author author(String name) {
+    return Author.builder().id(1L).name(name).bio("Bio").build();
   }
 }

@@ -1,10 +1,11 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.cashe.OrderSearchCache;
 import com.kruosant.bookwalker.domains.Author;
 import com.kruosant.bookwalker.domains.Book;
-import com.kruosant.bookwalker.domains.Order;
+import com.kruosant.bookwalker.domains.BookFormat;
+import com.kruosant.bookwalker.domains.Genre;
 import com.kruosant.bookwalker.domains.Publisher;
+import com.kruosant.bookwalker.domains.Tag;
 import com.kruosant.bookwalker.dtos.book.BookCreateDto;
 import com.kruosant.bookwalker.dtos.book.BookFullDto;
 import com.kruosant.bookwalker.dtos.book.BookPatchDto;
@@ -13,450 +14,253 @@ import com.kruosant.bookwalker.exceptions.ResourceNotFoundException;
 import com.kruosant.bookwalker.mappers.BookMapper;
 import com.kruosant.bookwalker.repositories.AuthorRepository;
 import com.kruosant.bookwalker.repositories.BookRepository;
-import com.kruosant.bookwalker.repositories.OrderRepository;
+import com.kruosant.bookwalker.repositories.GenreRepository;
 import com.kruosant.bookwalker.repositories.PublisherRepository;
+import com.kruosant.bookwalker.repositories.TagRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BookServiceTest {
-
   @Mock
-  private BookRepository bookRepo;
+  private BookRepository bookRepository;
   @Mock
-  private AuthorRepository authorRepo;
+  private AuthorRepository authorRepository;
   @Mock
-  private PublisherRepository publisherRepo;
+  private GenreRepository genreRepository;
   @Mock
-  private OrderRepository orderRepository;
+  private PublisherRepository publisherRepository;
+  @Mock
+  private TagRepository tagRepository;
   @Mock
   private BookMapper bookMapper;
   @Mock
-  private OrderSearchCache cache;
-
-  @Spy
+  private StorageService storageService;
   @InjectMocks
-  private BookService service;
+  private BookService bookService;
 
   @Test
-  void removeAuthorByIdsShouldDelegateToEntityVersion() {
-    Book book = book(1L, publisher(1L));
-    Author author = author(2L);
-    book.setAuthors(new HashSet<>(Set.of(author, author(3L))));
-    author.setBooks(new HashSet<>(Set.of(book)));
+  void getAllMapsBooks() {
+    Book book = Book.builder().id(1L).title("Book").build();
+    BookFullDto dto = BookFullDto.builder().title("Book").build();
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(authorRepo.findById(2L)).thenReturn(Optional.of(author));
-
-    service.removeAuthor(1L, 2L);
-
-    verify(bookRepo).save(book);
-    verify(authorRepo).save(author);
-  }
-
-  @Test
-  void removeAuthorShouldDeleteBookWhenLastAuthorRemoved() {
-    Publisher publisher = publisher(1L);
-    Book book = book(1L, publisher);
-    Author author = author(2L);
-    book.setAuthors(new HashSet<>(Set.of(author)));
-    author.setBooks(new HashSet<>(Set.of(book)));
-    when(orderRepository.findByBooksContaining(book)).thenReturn(List.of());
-
-    service.removeAuthor(book, author);
-
-    verify(cache, times(2)).invalidate();
-    verify(bookRepo).delete(book);
-    verify(authorRepo).save(author);
-  }
-
-  @Test
-  void removeAuthorShouldSaveBookWhenOtherAuthorsRemain() {
-    Publisher publisher = publisher(1L);
-    Book book = book(1L, publisher);
-    Author removed = author(2L);
-    Author remaining = author(3L);
-    book.setAuthors(new HashSet<>(Set.of(removed, remaining)));
-    removed.setBooks(new HashSet<>(Set.of(book)));
-
-    service.removeAuthor(book, removed);
-
-    verify(cache).invalidate();
-    verify(bookRepo).save(book);
-    verify(authorRepo).save(removed);
-  }
-
-  @Test
-  void setAuthorsShouldReplaceBookAuthors() {
-    Publisher publisher = publisher(1L);
-    Book book = book(1L, publisher);
-    Author oldAuthor = author(1L);
-    Author newAuthor = author(2L);
-    oldAuthor.setBooks(new HashSet<>(Set.of(book)));
-    book.setAuthors(new HashSet<>(Set.of(oldAuthor)));
-
-    service.setAuthors(book, List.of(newAuthor));
-
-    verify(cache).invalidate();
-    assertFalse(oldAuthor.getBooks().contains(book));
-    assertEquals(Set.of(newAuthor), book.getAuthors());
-  }
-
-  @Test
-  void setAuthorsByIdsShouldLoadEntitiesAndReplaceAuthors() {
-    Publisher publisher = publisher(1L);
-    Book book = book(1L, publisher);
-    Author first = author(10L);
-    Author second = author(20L);
-
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(authorRepo.findById(10L)).thenReturn(Optional.of(first));
-    when(authorRepo.findById(20L)).thenReturn(Optional.of(second));
-
-    service.setAuthors(1L, List.of(10L, 20L));
-
-    verify(cache).invalidate();
-    assertEquals(Set.of(first, second), book.getAuthors());
-  }
-
-  @Test
-  void setPublisherShouldMoveBookBetweenPublishers() {
-    Publisher oldPublisher = publisher(1L);
-    Publisher newPublisher = publisher(2L);
-    Book book = book(1L, oldPublisher);
-    oldPublisher.getBooks().add(book);
-
-    service.setPublisher(book, newPublisher);
-
-    assertFalse(oldPublisher.getBooks().contains(book));
-    assertEquals(newPublisher, book.getPublisher());
-    assertEquals(Set.of(book), newPublisher.getBooks());
-  }
-
-  @Test
-  void getAllByNameShouldReturnMappedBooks() {
-    Book book = book(1L, publisher(1L));
-    BookFullDto dto = BookFullDto.builder().id(1L).name("Book").build();
-
-    when(bookRepo.findAllByName("Book")).thenReturn(List.of(book));
-    when(bookMapper.toFullDto(List.of(book))).thenReturn(List.of(dto));
-
-    List<BookFullDto> result = service.getAllByName("Book");
-
-    assertEquals(List.of(dto), result);
-  }
-
-  @Test
-  void getByIdShouldReturnMappedBook() {
-    Book book = book(1L, publisher(1L));
-    BookFullDto dto = BookFullDto.builder().id(1L).name("Book").build();
-
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
+    when(bookRepository.findAll()).thenReturn(List.of(book));
     when(bookMapper.toFullDto(book)).thenReturn(dto);
 
-    BookFullDto result = service.getById(1L);
-
-    assertEquals(dto, result);
+    assertEquals(List.of(dto), bookService.getAll());
   }
 
   @Test
-  void getAllShouldReturnMappedBooks() {
-    PageRequest pageable = PageRequest.of(0, 20);
-    Book first = book(1L, publisher(1L));
-    Book second = book(2L, publisher(1L));
-    BookFullDto firstDto = BookFullDto.builder().id(1L).name("First").build();
-    BookFullDto secondDto = BookFullDto.builder().id(2L).name("Second").build();
+  void getByIdMapsBook() {
+    Book book = Book.builder().id(1L).title("Book").build();
+    BookFullDto dto = BookFullDto.builder().title("Book").build();
 
-    when(bookRepo.findAll(pageable)).thenReturn(new PageImpl<>(List.of(first, second), pageable, 2));
-    when(bookMapper.toFullDto(first)).thenReturn(firstDto);
-    when(bookMapper.toFullDto(second)).thenReturn(secondDto);
-
-    Page<BookFullDto> result = service.getAll(pageable);
-
-    assertEquals(List.of(firstDto, secondDto), result.getContent());
-    assertEquals(2, result.getTotalElements());
-  }
-
-  @Test
-  void getByIdShouldThrowWhenBookMissing() {
-    when(bookRepo.findById(1L)).thenReturn(Optional.empty());
-
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(1L));
-  }
-
-  @Test
-  void createShouldSaveBookWhenRelationsExist() {
-    Author first = author(1L);
-    Author second = author(2L);
-    Publisher publisher = publisher(10L);
-    BookCreateDto dto = BookCreateDto.builder()
-        .authors(Set.of(1L, 2L))
-        .name("Book")
-        .pageCount(300L)
-        .publishDate(LocalDate.of(2020, 1, 1))
-        .publisher(10L)
-        .price(12.5)
-        .build();
-    Book savedBook = book(100L, publisher);
-    BookFullDto fullDto = BookFullDto.builder().id(100L).name("Book").build();
-
-    when(authorRepo.findAllById(dto.getAuthors())).thenReturn(List.of(first, second));
-    when(publisherRepo.findById(10L)).thenReturn(Optional.of(publisher));
-    when(bookRepo.save(any(Book.class))).thenReturn(savedBook);
-    when(bookMapper.toFullDto(savedBook)).thenReturn(fullDto);
-
-    BookFullDto result = service.create(dto);
-
-    verify(cache).invalidate();
-    assertEquals(fullDto, result);
-  }
-
-  @Test
-  void createShouldThrowWhenAnyRelationMissing() {
-    BookCreateDto dto = BookCreateDto.builder()
-        .authors(Set.of(1L, 2L))
-        .name("Book")
-        .pageCount(300L)
-        .publishDate(LocalDate.of(2020, 1, 1))
-        .publisher(10L)
-        .price(12.5)
-        .build();
-
-    when(authorRepo.findAllById(dto.getAuthors())).thenReturn(List.of(author(1L)));
-    when(publisherRepo.findById(10L)).thenReturn(Optional.empty());
-
-    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
-  }
-
-  @Test
-  void createShouldThrowWhenPublisherMissingAndAuthorsExist() {
-    BookCreateDto dto = BookCreateDto.builder()
-        .authors(Set.of(1L, 2L))
-        .name("Book")
-        .pageCount(300L)
-        .publishDate(LocalDate.of(2020, 1, 1))
-        .publisher(10L)
-        .price(12.5)
-        .build();
-
-    when(authorRepo.findAllById(dto.getAuthors())).thenReturn(List.of(author(1L), author(2L)));
-    when(publisherRepo.findById(10L)).thenReturn(Optional.empty());
-
-    assertThrows(ResourceNotFoundException.class, () -> service.create(dto));
-  }
-
-  @Test
-  void deleteBookShouldRemoveBookFromOrdersAndDeleteIt() {
-    Book book = book(1L, publisher(1L));
-    Order firstOrder = new Order();
-    firstOrder.setBooks(new HashSet<>(Set.of(book)));
-    Order secondOrder = new Order();
-    secondOrder.setBooks(new HashSet<>(Set.of(book)));
-
-    when(orderRepository.findByBooksContaining(book)).thenReturn(List.of(firstOrder, secondOrder));
-
-    service.deleteBook(book);
-
-    verify(cache).invalidate();
-    assertFalse(firstOrder.getBooks().contains(book));
-    assertFalse(secondOrder.getBooks().contains(book));
-    verify(bookRepo).delete(book);
-  }
-
-  @Test
-  void deleteByIdShouldDeleteLoadedBook() {
-    Book book = book(1L, publisher(1L));
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(orderRepository.findByBooksContaining(book)).thenReturn(List.of());
-
-    service.deleteById(1L);
-
-    verify(bookRepo).delete(book);
-  }
-
-  @Test
-  void addAuthorShouldLinkBookAndAuthor() {
-    Book book = book(1L, publisher(1L));
-    Author author = author(2L);
-    BookFullDto dto = BookFullDto.builder().id(1L).name("Book").build();
-
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(authorRepo.findById(2L)).thenReturn(Optional.of(author));
-    when(bookRepo.save(book)).thenReturn(book);
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
     when(bookMapper.toFullDto(book)).thenReturn(dto);
 
-    BookFullDto result = service.addAuthor(1L, 2L);
-
-    assertEquals(Set.of(author), book.getAuthors());
-    assertEquals(Set.of(book), author.getBooks());
-    assertEquals(dto, result);
+    assertEquals(dto, bookService.getById(1L));
   }
 
   @Test
-  void deleteAuthorShouldRemoveAuthorAndReturnMappedBook() {
-    Publisher publisher = publisher(1L);
-    Book book = book(1L, publisher);
-    Author author = author(2L);
-    Author remaining = author(3L);
-    book.setAuthors(new HashSet<>(Set.of(author, remaining)));
-    author.setBooks(new HashSet<>(Set.of(book)));
-    BookFullDto dto = BookFullDto.builder().id(1L).name("Book").build();
+  void createBuildsBookRelationsAndFlags() {
+    BookCreateDto dto = createDto();
+    BookFullDto fullDto = BookFullDto.builder().title("Book").build();
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(authorRepo.findById(2L)).thenReturn(Optional.of(author));
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(dto);
+    mockRelations();
+    when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(bookMapper.toFullDto(any(Book.class))).thenReturn(fullDto);
 
-    BookFullDto result = service.deleteAuthor(1L, 2L);
-
-    assertEquals(dto, result);
+    assertEquals(fullDto, bookService.create(dto));
+    verify(bookRepository).save(any(Book.class));
   }
 
   @Test
-  void setPublisherByIdsShouldSaveBookWithNewPublisher() {
-    Book book = book(1L, publisher(1L));
-    Publisher newPublisher = publisher(2L);
-    BookFullDto dto = BookFullDto.builder().id(1L).name("Book").build();
+  void patchOnlyChangesProvidedFields() {
+    Book book = Book.builder().id(1L).title("Old").price(BigDecimal.ONE).build();
+    BookPatchDto dto = new BookPatchDto();
+    dto.setTitle("New");
+    dto.setFeatured(true);
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    when(publisherRepo.findById(2L)).thenReturn(Optional.of(newPublisher));
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(dto);
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(bookRepository.save(book)).thenReturn(book);
+    when(bookMapper.toFullDto(book)).thenReturn(BookFullDto.builder().title("New").build());
 
-    BookFullDto result = service.setPublisher(1L, 2L);
+    bookService.patch(1L, dto);
 
-    assertEquals(newPublisher, book.getPublisher());
-    assertEquals(dto, result);
+    assertEquals("New", book.getTitle());
+    assertEquals(BigDecimal.ONE, book.getPrice());
+    assertEquals(true, book.isFeatured());
   }
 
   @Test
-  void patchShouldUpdateOptionalRelationsWhenProvided() {
-    Book book = book(1L, publisher(1L));
-    BookPatchDto dto = BookPatchDto.builder()
-        .name("Updated")
-        .publisher(2L)
-        .authors(Set.of(3L, 4L))
-        .build();
-    BookFullDto fullDto = BookFullDto.builder().id(1L).name("Updated").build();
+  void patchChangesEveryProvidedField() {
+    Book book = Book.builder().id(1L).title("Old").build();
+    BookPatchDto dto = new BookPatchDto();
+    dto.setTitle("New");
+    dto.setAuthors(Set.of(1L));
+    dto.setGenreId(1L);
+    dto.setPrice(BigDecimal.valueOf(11));
+    dto.setDiscountPrice(BigDecimal.valueOf(9));
+    dto.setFormat(BookFormat.PAPERBACK);
+    dto.setPages(200);
+    dto.setYear(2025);
+    dto.setPublishDate(LocalDate.of(2025, 1, 1));
+    dto.setPublisherIds(Set.of(1L));
+    dto.setBlurb("Blurb");
+    dto.setDescription("Description");
+    dto.setLongDescription("Long");
+    dto.setTagIds(Set.of(1L));
+    dto.setFeatured(true);
+    dto.setPopular(true);
+    dto.setNewArrival(true);
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    doNothing().when(bookMapper).updateBook(book, dto);
-    doReturn(BookFullDto.builder().id(1L).build()).when(service).setPublisher(1L, 2L);
-    doNothing().when(service).setAuthors(1L, dto.getAuthors());
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(fullDto);
+    mockRelations();
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(bookRepository.save(book)).thenReturn(book);
+    when(bookMapper.toFullDto(book)).thenReturn(BookFullDto.builder().build());
 
-    BookFullDto result = service.patch(1L, dto);
+    bookService.patch(1L, dto);
 
-    verify(cache).invalidate();
-    verify(service).setPublisher(1L, 2L);
-    verify(service).setAuthors(1L, dto.getAuthors());
-    assertEquals(fullDto, result);
+    assertEquals("New", book.getTitle());
+    assertEquals(BigDecimal.valueOf(11), book.getPrice());
+    assertEquals(BookFormat.PAPERBACK, book.getFormat());
+    assertEquals(1, book.getTags().size());
+    assertEquals(true, book.isNewArrival());
   }
 
   @Test
-  void patchShouldSkipOptionalRelationsWhenMissing() {
-    Book book = book(1L, publisher(1L));
-    BookPatchDto dto = BookPatchDto.builder().name("Updated").build();
-    BookFullDto fullDto = BookFullDto.builder().id(1L).name("Updated").build();
+  void patchLeavesNullFieldsUntouched() {
+    Book book = Book.builder().id(1L).title("Old").featured(false).popular(false).newArrival(false).build();
+    BookPatchDto dto = new BookPatchDto();
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    doNothing().when(bookMapper).updateBook(book, dto);
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(fullDto);
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(bookRepository.save(book)).thenReturn(book);
+    when(bookMapper.toFullDto(book)).thenReturn(BookFullDto.builder().build());
 
-    BookFullDto result = service.patch(1L, dto);
+    bookService.patch(1L, dto);
 
-    assertEquals(fullDto, result);
+    assertEquals("Old", book.getTitle());
+    assertEquals(false, book.isFeatured());
   }
 
   @Test
-  void putShouldReplaceOptionalRelationsWhenProvided() {
-    Book book = book(1L, publisher(1L));
-    BookPutDto dto = BookPutDto.builder()
-        .name("Updated")
-        .publishDate(LocalDate.of(2020, 1, 1))
-        .authors(Set.of(3L, 4L))
-        .pageCount(250L)
-        .publisher(2L)
-        .price(20.0)
-        .build();
-    BookFullDto fullDto = BookFullDto.builder().id(1L).name("Updated").build();
+  void putReplacesBookFields() {
+    Book book = Book.builder().id(1L).title("Old").build();
+    BookPutDto dto = new BookPutDto();
+    copyCreateFields(dto);
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    doNothing().when(bookMapper).updateBook(book, dto);
-    doReturn(BookFullDto.builder().id(1L).build()).when(service).setPublisher(1L, 2L);
-    doNothing().when(service).setAuthors(1L, dto.getAuthors());
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(fullDto);
+    mockRelations();
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(bookRepository.save(book)).thenReturn(book);
+    when(bookMapper.toFullDto(book)).thenReturn(BookFullDto.builder().title("Book").build());
 
-    BookFullDto result = service.put(1L, dto);
+    bookService.put(1L, dto);
 
-    verify(cache).invalidate();
-    verify(service).setPublisher(1L, 2L);
-    verify(service).setAuthors(1L, dto.getAuthors());
-    assertEquals(fullDto, result);
+    assertEquals("Book", book.getTitle());
+    assertEquals(BookFormat.HARDCOVER, book.getFormat());
+    assertEquals(1, book.getAuthors().size());
+    assertEquals(1, book.getPublishers().size());
   }
 
   @Test
-  void putShouldSkipOptionalRelationsWhenMissing() {
-    Book book = book(1L, publisher(1L));
-    BookPutDto dto = BookPutDto.builder()
-        .name("Updated")
-        .publishDate(LocalDate.of(2020, 1, 1))
-        .authors(null)
-        .pageCount(250L)
-        .publisher(null)
-        .price(20.0)
-        .build();
-    BookFullDto fullDto = BookFullDto.builder().id(1L).name("Updated").build();
+  void uploadCoverStoresPath() {
+    Book book = Book.builder().id(1L).build();
+    MultipartFile file = org.mockito.Mockito.mock(MultipartFile.class);
 
-    when(bookRepo.findById(1L)).thenReturn(Optional.of(book));
-    doNothing().when(bookMapper).updateBook(book, dto);
-    when(bookRepo.save(book)).thenReturn(book);
-    when(bookMapper.toFullDto(book)).thenReturn(fullDto);
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+    when(storageService.storeCover(file)).thenReturn("covers/book.jpg");
+    when(bookRepository.save(book)).thenReturn(book);
+    when(bookMapper.toFullDto(book)).thenReturn(BookFullDto.builder().coverUrl("covers/book.jpg").build());
 
-    BookFullDto result = service.put(1L, dto);
+    bookService.uploadCover(1L, file);
 
-    assertEquals(fullDto, result);
+    assertEquals("covers/book.jpg", book.getCoverPath());
   }
 
-  private static Author author(Long id) {
-    Author author = new Author();
-    author.setId(id);
-    author.setBooks(new HashSet<>());
-    return author;
+  @Test
+  void deleteRemovesExistingBook() {
+    Book book = Book.builder().id(1L).build();
+    when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+    bookService.delete(1L);
+
+    verify(bookRepository).delete(book);
   }
 
-  private static Publisher publisher(long id) {
-    Publisher publisher = new Publisher();
-    publisher.setId(id);
-    publisher.setBooks(new HashSet<>());
-    return publisher;
+  @Test
+  void getByIdThrowsWhenMissing() {
+    when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> bookService.getById(1L));
   }
 
-  private static Book book(long id, Publisher publisher) {
-    Book book = new Book();
-    book.setId(id);
-    book.setPublisher(publisher);
-    book.setAuthors(new HashSet<>());
-    return book;
+  @Test
+  void createWithoutTagsUsesEmptyTagSet() {
+    BookCreateDto dto = createDto();
+    dto.setTagIds(null);
+
+    when(authorRepository.findAllById(Set.of(1L))).thenReturn(List.of(Author.builder().id(1L).build()));
+    when(genreRepository.findById(1L)).thenReturn(Optional.of(Genre.builder().id(1L).build()));
+    when(publisherRepository.findAllById(Set.of(1L))).thenReturn(List.of(Publisher.builder().id(1L).build()));
+    when(bookRepository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(bookMapper.toFullDto(any(Book.class))).thenReturn(BookFullDto.builder().build());
+
+    bookService.create(dto);
+
+    verify(bookRepository).save(org.mockito.ArgumentMatchers.argThat(book -> book.getTags().isEmpty()));
+  }
+
+  @Test
+  void createThrowsWhenGenreMissing() {
+    BookCreateDto dto = createDto();
+    when(authorRepository.findAllById(Set.of(1L))).thenReturn(List.of(Author.builder().id(1L).build()));
+    when(genreRepository.findById(1L)).thenReturn(Optional.empty());
+
+    assertThrows(ResourceNotFoundException.class, () -> bookService.create(dto));
+  }
+
+  private void mockRelations() {
+    when(authorRepository.findAllById(Set.of(1L))).thenReturn(List.of(Author.builder().id(1L).build()));
+    when(genreRepository.findById(1L)).thenReturn(Optional.of(Genre.builder().id(1L).build()));
+    when(publisherRepository.findAllById(Set.of(1L))).thenReturn(List.of(Publisher.builder().id(1L).build()));
+    when(tagRepository.findAllById(Set.of(1L))).thenReturn(List.of(Tag.builder().id(1L).build()));
+  }
+
+  private static BookCreateDto createDto() {
+    BookCreateDto dto = new BookCreateDto();
+    copyCreateFields(dto);
+    return dto;
+  }
+
+  private static void copyCreateFields(BookCreateDto dto) {
+    dto.setTitle("Book");
+    dto.setAuthors(Set.of(1L));
+    dto.setGenreId(1L);
+    dto.setPrice(BigDecimal.TEN);
+    dto.setDiscountPrice(BigDecimal.ONE);
+    dto.setFormat(BookFormat.HARDCOVER);
+    dto.setPages(100);
+    dto.setYear(2026);
+    dto.setPublisherIds(Set.of(1L));
+    dto.setTagIds(Set.of(1L));
+    dto.setFeatured(true);
+    dto.setPopular(true);
+    dto.setNewArrival(true);
   }
 }
