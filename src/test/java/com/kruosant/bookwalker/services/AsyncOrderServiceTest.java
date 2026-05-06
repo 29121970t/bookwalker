@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -30,8 +31,9 @@ class AsyncOrderServiceTest {
   @Test
   void createBulkAsyncRejectsEmptyPayload() {
     AsyncOrderService service = service();
+    List<OrderCreateDto> payload = List.of();
 
-    assertThrows(BadRequestException.class, () -> service.createBulkAsync(List.of()));
+    assertThrows(BadRequestException.class, () -> service.createBulkAsync(payload));
   }
 
   @Test
@@ -58,7 +60,7 @@ class AsyncOrderServiceTest {
 
     assertEquals(AsyncTaskStatus.COMPLETED, service.getTaskStatus(task.getTaskId()).getStatus());
     assertEquals("Created 1 orders", task.getResult());
-    assertTrue(task.getEndTime() != null);
+    assertNotNull(task.getEndTime());
     assertTrue(service.getAllTasks().containsKey(task.getTaskId()));
   }
 
@@ -72,7 +74,7 @@ class AsyncOrderServiceTest {
 
     assertEquals(AsyncTaskStatus.FAILED, task.getStatus());
     assertEquals("database down", task.getResult());
-    assertTrue(task.getEndTime() != null);
+    assertNotNull(task.getEndTime());
   }
 
   @Test
@@ -83,7 +85,7 @@ class AsyncOrderServiceTest {
   }
 
   @Test
-  void processBulkCreationReturnsWhenTaskWasRemoved() throws Exception {
+  void processBulkCreationReturnsWhenTaskWasRemoved() throws ReflectiveOperationException {
     Map<String, AsyncTask> tasks = new ConcurrentHashMap<>();
     AsyncOrderService service = new AsyncOrderService(orderService, tasks, Runnable::run);
 
@@ -95,7 +97,7 @@ class AsyncOrderServiceTest {
   }
 
   @Test
-  void resolveErrorMessageFallsBackWhenMessageBlank() throws Exception {
+  void resolveErrorMessageFallsBackWhenMessageBlank() throws ReflectiveOperationException {
     AsyncOrderService service = service();
 
     Method method = AsyncOrderService.class.getDeclaredMethod("resolveErrorMessage", Throwable.class);
@@ -105,7 +107,7 @@ class AsyncOrderServiceTest {
   }
 
   @Test
-  void resolveErrorMessageUsesCauseMessage() throws Exception {
+  void resolveErrorMessageUsesCauseMessage() throws ReflectiveOperationException {
     AsyncOrderService service = service();
 
     Method method = AsyncOrderService.class.getDeclaredMethod("resolveErrorMessage", Throwable.class);
@@ -115,7 +117,7 @@ class AsyncOrderServiceTest {
   }
 
   @Test
-  void resolveErrorMessageFallsBackWhenCauseMessageIsNull() throws Exception {
+  void resolveErrorMessageFallsBackWhenCauseMessageIsNull() throws ReflectiveOperationException {
     AsyncOrderService service = service();
 
     Method method = AsyncOrderService.class.getDeclaredMethod("resolveErrorMessage", Throwable.class);

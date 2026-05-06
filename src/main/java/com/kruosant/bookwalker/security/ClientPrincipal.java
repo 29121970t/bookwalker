@@ -6,12 +6,16 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
 @Getter
 public class ClientPrincipal implements UserDetails {
-  private final Client client;
+  @Serial
+  private static final long serialVersionUID = 1L;
+
+  private final transient Client client;
 
   public ClientPrincipal(Client client) {
     this.client = client;

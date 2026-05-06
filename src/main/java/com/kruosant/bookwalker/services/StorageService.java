@@ -1,6 +1,7 @@
 package com.kruosant.bookwalker.services;
 
 import com.kruosant.bookwalker.exceptions.BadRequestException;
+import com.kruosant.bookwalker.exceptions.StorageException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +30,7 @@ public class StorageService {
       Files.copy(file.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
       return filename;
     } catch (IOException e) {
-      throw new RuntimeException("Failed to store file", e);
+      throw new StorageException("Failed to store file", e);
     }
   }
 }

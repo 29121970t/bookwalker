@@ -1,6 +1,7 @@
 package com.kruosant.bookwalker.services;
 
 import com.kruosant.bookwalker.exceptions.BadRequestException;
+import com.kruosant.bookwalker.exceptions.StorageException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
@@ -63,6 +64,6 @@ class StorageServiceTest {
       }
     };
 
-    assertThrows(RuntimeException.class, () -> storageService.storeCover(file));
+    assertThrows(StorageException.class, () -> storageService.storeCover(file));
   }
 }

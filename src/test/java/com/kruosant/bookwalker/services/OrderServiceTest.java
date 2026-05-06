@@ -236,9 +236,10 @@ class OrderServiceTest {
 
   @Test
   void createThrowsWhenClientMissing() {
+    OrderCreateDto dto = createDto();
     when(clientRepository.findById(1L)).thenReturn(Optional.empty());
 
-    assertThrows(ResourceNotFoundException.class, () -> orderService.create(createDto()));
+    assertThrows(ResourceNotFoundException.class, () -> orderService.create(dto));
   }
 
   private static OrderCreateDto createDto() {

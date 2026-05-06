@@ -1,6 +1,7 @@
 package com.kruosant.bookwalker.security;
 
 import com.kruosant.bookwalker.repositories.ClientRepository;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,14 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+  private static final String BOOKS_PATTERN = "/books/**";
+  private static final String AUTHORS_PATTERN = "/authors/**";
+  private static final String PUBLISHERS_PATTERN = "/publishers/**";
+  private static final String GENRES_PATTERN = "/genres/**";
+  private static final String TAGS_PATTERN = "/tags/**";
+  private static final String CLIENTS_PATTERN = "/clients/**";
+  private static final String ORDERS_PATTERN = "/orders/**";
+
   @Bean
   public UserDetailsService userDetailsService(ClientRepository clientRepository) {
     return username -> clientRepository.findFirstByEmailIgnoreCase(username == null ? null : username.trim())
@@ -39,8 +48,12 @@ public class SecurityConfig {
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-    return configuration.getAuthenticationManager();
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+    try {
+      return configuration.getAuthenticationManager();
+    } catch (Exception ex) {
+      throw new BeanCreationException("Failed to create authentication manager", ex);
+    }
   }
 
   @Bean
@@ -49,30 +62,34 @@ public class SecurityConfig {
       JwtAuthenticationFilter jwtAuthenticationFilter,
       UserDetailsService userDetailsService,
       PasswordEncoder passwordEncoder
-  ) throws Exception {
+  ) {
     DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailsService);
     authenticationProvider.setPasswordEncoder(passwordEncoder);
 
-    http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> {})
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authenticationProvider(authenticationProvider)
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/**", "/uploads/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/books/**", "/authors/**", "/publishers/**", "/genres/**", "/tags/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/orders/me").authenticated()
-            .requestMatchers(HttpMethod.GET, "/orders/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.GET, "/clients/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.POST, "/orders").authenticated()
-            .requestMatchers(HttpMethod.POST, "/books/**", "/authors/**", "/publishers/**", "/genres/**", "/tags/**", "/clients/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.PUT, "/books/**", "/authors/**", "/publishers/**", "/genres/**", "/tags/**", "/clients/**", "/orders/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.PATCH, "/books/**", "/authors/**", "/publishers/**", "/clients/**", "/orders/**").hasRole("ADMIN")
-            .requestMatchers(HttpMethod.DELETE, "/books/**", "/authors/**", "/publishers/**", "/genres/**", "/tags/**", "/clients/**", "/orders/**").hasRole("ADMIN")
-            .anyRequest().authenticated()
-        );
-    return http.build();
+    try {
+      http
+          .csrf(csrf -> csrf.disable())
+          .cors(cors -> {})
+          .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .authenticationProvider(authenticationProvider)
+          .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+          .authorizeHttpRequests(auth -> auth
+              .requestMatchers("/auth/**", "/uploads/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll()
+              .requestMatchers(HttpMethod.GET, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN).permitAll()
+              .requestMatchers(HttpMethod.GET, "/orders/me").authenticated()
+              .requestMatchers(HttpMethod.GET, ORDERS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.GET, CLIENTS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.POST, "/orders").authenticated()
+              .requestMatchers(HttpMethod.POST, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.PUT, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.PATCH, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.DELETE, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
+              .anyRequest().authenticated()
+          );
+      return http.build();
+    } catch (Exception ex) {
+      throw new BeanCreationException("Failed to create security filter chain", ex);
+    }
   }
 
   @Bean

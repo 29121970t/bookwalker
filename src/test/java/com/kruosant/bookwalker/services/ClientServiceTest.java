@@ -269,7 +269,7 @@ class ClientServiceTest {
   }
 
   @Test
-  void normalizeEmailReturnsNullForNullInput() throws Exception {
+  void normalizeEmailReturnsNullForNullInput() throws ReflectiveOperationException {
     Method method = ClientService.class.getDeclaredMethod("normalizeEmail", String.class);
     method.setAccessible(true);
 

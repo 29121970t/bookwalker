@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CounterServiceTest {
 
   @Test
-  void incrementShouldIncreaseUnsafeCounter() throws Exception {
+  void incrementShouldIncreaseUnsafeCounter() throws ReflectiveOperationException {
     CounterService service = new CounterService();
 
     service.increment();
@@ -24,7 +24,7 @@ class CounterServiceTest {
   }
 
   @Test
-  void incrementSafeShouldIncreaseAtomicCounter() throws Exception {
+  void incrementSafeShouldIncreaseAtomicCounter() throws ReflectiveOperationException {
     CounterService service = new CounterService();
 
     service.incrementSafe();
