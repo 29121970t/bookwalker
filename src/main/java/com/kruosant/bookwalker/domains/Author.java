@@ -1,35 +1,38 @@
 package com.kruosant.bookwalker.domains;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Table(name = "authors")
 @Entity
-@AllArgsConstructor
+@Table(name = "authors")
 @Getter
 @Setter
-@Builder
+@AllArgsConstructor
 @NoArgsConstructor
-@NamedEntityGraph(
-    name = "Author.books",
-    attributeNodes = {
-        @NamedAttributeNode("books"),
-    }
-)
+@Builder
 public class Author {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
-  private String name = "";
-  private String middleName = "";
-  private String surname = "";
-  private String bio = "";
+  private Long id;
 
-  @ManyToMany(mappedBy = "authors", cascade = CascadeType.ALL)
+  private String name;
+  private String bio;
+  private String country;
+  private String website;
+
+  @ManyToMany(mappedBy = "authors")
   @Builder.Default
   private Set<Book> books = new HashSet<>();
-
 }

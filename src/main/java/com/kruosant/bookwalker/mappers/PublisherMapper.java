@@ -1,26 +1,30 @@
 package com.kruosant.bookwalker.mappers;
 
 import com.kruosant.bookwalker.domains.Publisher;
-import com.kruosant.bookwalker.dtos.publisher.PublisherCreateDto;
+import com.kruosant.bookwalker.dtos.publisher.PublisherBasicInfoDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherFullDto;
-import com.kruosant.bookwalker.dtos.publisher.PublisherPatchDto;
-import com.kruosant.bookwalker.dtos.publisher.PublisherPutDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface PublisherMapper {
+@Component
+public class PublisherMapper {
+  public PublisherBasicInfoDto toBasicInfoDto(Publisher publisher) {
+    return PublisherBasicInfoDto.builder()
+        .id(publisher.getId())
+        .name(publisher.getName())
+        .description(publisher.getDescription())
+        .country(publisher.getCountry())
+        .website(publisher.getWebsite())
+        .build();
+  }
 
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "books", ignore = true)
-  Publisher toAuthor(PublisherFullDto dto);
-
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "books", ignore = true)
-  Publisher toAuthor(PublisherCreateDto dto);
-
-  PublisherFullDto toFullDto(Publisher dto);
-
-  @Mapping(target = "id", ignore = true)
-  PublisherPatchDto toPatchDto(PublisherPutDto dto);
+  public PublisherFullDto toFullDto(Publisher publisher) {
+    return PublisherFullDto.builder()
+        .id(publisher.getId())
+        .name(publisher.getName())
+        .description(publisher.getDescription())
+        .country(publisher.getCountry())
+        .website(publisher.getWebsite())
+        .booksCount(publisher.getBooks().size())
+        .build();
+  }
 }

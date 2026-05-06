@@ -2,11 +2,13 @@ package com.kruosant.bookwalker.exceptions;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -38,6 +40,17 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), "Method not allowed"));
   }
 
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<Map<String, Object>> handleException(AuthenticationException ex) {
+    return ResponseEntity.status(401).body(error(HttpStatusCode.valueOf(401), "Invalid email or password"));
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Map<String, Object>> handleException(ResponseStatusException ex) {
+    String message = ex.getReason() == null || ex.getReason().isBlank() ? "Request failed" : ex.getReason();
+    return ResponseEntity.status(ex.getStatusCode()).body(error(ex.getStatusCode(), message));
+  }
+
 
   private Map<String, Object> error(HttpStatusCode status, String message) {
     return Map.of(
@@ -47,6 +60,4 @@ public class GlobalExceptionHandler {
     );
   }
 }
-
-
 

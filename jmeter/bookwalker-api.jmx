@@ -94,7 +94,7 @@
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Main">
         <stringProp name="ThreadGroup.num_threads">${__P(users,1000)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(ramp_up,11)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(ramp_up,15)}</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">

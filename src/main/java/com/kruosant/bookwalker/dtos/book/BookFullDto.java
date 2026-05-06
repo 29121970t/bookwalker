@@ -1,14 +1,16 @@
 package com.kruosant.bookwalker.dtos.book;
 
 import com.kruosant.bookwalker.dtos.author.AuthorBasicInfoDto;
+import com.kruosant.bookwalker.dtos.genre.GenreDto;
 import com.kruosant.bookwalker.dtos.publisher.PublisherBasicInfoDto;
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Positive;
-import lombok.*;
+import com.kruosant.bookwalker.dtos.tag.TagDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -19,33 +21,22 @@ import java.util.Set;
 @Builder
 public class BookFullDto {
   private Long id;
-
-  @NotBlank(message = "field is necessary")
-  @Schema(description = "Book's name", example = "Book Title", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String name;
-
-  @Schema(description = "Book's authors", requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "field is necessary")
+  private String title;
   private Set<AuthorBasicInfoDto> authors;
-
-  @Schema(description = "Book's page count", example = "300", requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "is necessary")
-  @Positive(message = "be positive number")
-  private Long pageCount;
-
-  @Schema(description = "Book's publish date", example = "2004-01-01", requiredMode = Schema.RequiredMode.REQUIRED)
-  @PastOrPresent(message = "cannot be in future")
-  @NotNull(message = "should be positive number")
+  private GenreDto genre;
+  private BigDecimal price;
+  private BigDecimal discountPrice;
+  private String format;
+  private Integer pages;
+  private Integer year;
   private LocalDate publishDate;
-
-  @NotNull(message = "field is necessary")
-  @Positive(message = "should be positive number")
-  @Schema(description = "Book's publisher", requiredMode = Schema.RequiredMode.REQUIRED)
-  private PublisherBasicInfoDto publisher;
-
-  @Schema(description = "Book's price", example = "3.1", requiredMode = Schema.RequiredMode.REQUIRED)
-  @NotNull(message = "field is necessary")
-  @Positive(message = "should be positive number")
-  private Double price;
-
+  private Set<PublisherBasicInfoDto> publishers;
+  private String blurb;
+  private String description;
+  private String longDescription;
+  private Set<TagDto> tags;
+  private String coverUrl;
+  private boolean featured;
+  private boolean popular;
+  private boolean newArrival;
 }

@@ -1,14 +1,17 @@
 package com.kruosant.bookwalker.dtos.client;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import com.kruosant.bookwalker.domains.UserRole;
+import com.kruosant.bookwalker.domains.UserStatus;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ClientPatchDto {
-  @Schema(description = "Clients's username", example = "abova", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String username;
+  private String name;
+  private String email;
+  private String city;
+  private String password;
+  private UserRole role;
+  private UserStatus status;
 }

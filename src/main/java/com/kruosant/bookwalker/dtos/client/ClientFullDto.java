@@ -1,9 +1,13 @@
 package com.kruosant.bookwalker.dtos.client;
 
 import com.kruosant.bookwalker.dtos.order.OrderBasicInfoDto;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -13,8 +17,11 @@ import java.util.List;
 @Builder
 public class ClientFullDto {
   private Long id;
-  @Schema(description = "Clients's username", example = "abova", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String username;
-  @Schema(description = "Clients's name", requiredMode = Schema.RequiredMode.REQUIRED)
+  private String name;
+  private String email;
+  private String city;
+  private String role;
+  private String status;
+  private LocalDate joinedAt;
   private List<OrderBasicInfoDto> orders;
 }

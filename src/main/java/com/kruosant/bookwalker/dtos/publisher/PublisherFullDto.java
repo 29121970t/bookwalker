@@ -1,9 +1,10 @@
 package com.kruosant.bookwalker.dtos.publisher;
 
-import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
-import lombok.*;
-
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -13,5 +14,8 @@ import java.util.List;
 public class PublisherFullDto {
   private Long id;
   private String name;
-  private List<BookBasicInfoDto> books;
+  private String description;
+  private String country;
+  private String website;
+  private Integer booksCount;
 }

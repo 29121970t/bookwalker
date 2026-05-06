@@ -15,6 +15,7 @@ logs/
 jmeter/results
 target/
 logs/
+uploads/
 
 ### IntelliJ IDEA ###
 .idea

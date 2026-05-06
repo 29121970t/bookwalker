@@ -1,55 +1,40 @@
 package com.kruosant.bookwalker.mappers;
 
-
-import com.kruosant.bookwalker.domains.Book;
-import com.kruosant.bookwalker.domains.Client;
 import com.kruosant.bookwalker.domains.Order;
-import com.kruosant.bookwalker.dtos.client.ClientBasicInfoDto;
-import com.kruosant.bookwalker.dtos.order.OrderCreateDto;
 import com.kruosant.bookwalker.dtos.order.OrderFullDto;
-import com.kruosant.bookwalker.dtos.order.OrderPatchDto;
-import com.kruosant.bookwalker.dtos.order.OrderPutDto;
-import com.kruosant.bookwalker.exceptions.BadRequestException;
-import com.kruosant.bookwalker.repositories.BookRepository;
-import com.kruosant.bookwalker.repositories.ClientRepository;
-import lombok.NonNull;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.kruosant.bookwalker.dtos.order.OrderItemDto;
+import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
-public abstract class OrderMapper {
-  @Autowired
-  private BookRepository bookRepo;
-  @Autowired
-  private ClientRepository clientRepo;
-  @Autowired
-  private ClientMapper clientMapper;
+@Component
+public class OrderMapper {
+  private final ClientMapper clientMapper;
+  private final BookMapper bookMapper;
 
-  @Mapping(target = "id", ignore = true)
-  public abstract Order toOrder(OrderCreateDto dto);
-
-  public abstract OrderFullDto toFullDto(Order order);
-
-  public abstract OrderPatchDto toPatchDto(OrderPutDto dto);
-
-  protected ClientBasicInfoDto map(Client client) {
-    return clientMapper.toBasicInfoDto(client);
+  public OrderMapper(ClientMapper clientMapper, BookMapper bookMapper) {
+    this.clientMapper = clientMapper;
+    this.bookMapper = bookMapper;
   }
 
-  public Set<Book> map(List<@NonNull Long> value) throws BadRequestException {
-    return value.stream().map(id -> bookRepo.findById(id)
-        .orElseThrow(BadRequestException::new)).collect(Collectors.toCollection(HashSet::new));
+  public OrderFullDto toFullDto(Order order) {
+    return OrderFullDto.builder()
+        .id(order.getId())
+        .orderCode(order.getOrderCode())
+        .date(order.getDate())
+        .status(order.getStatus())
+        .total(order.getTotal())
+        .paymentMethod(order.getPaymentMethod())
+        .deliveryCity(order.getDeliveryCity())
+        .client(clientMapper.toBasicInfoDto(order.getClient()))
+        .items(order.getItems().stream()
+            .map(item -> OrderItemDto.builder()
+                .id(item.getId())
+                .book(bookMapper.toBasicInfoDto(item.getBook()))
+                .quantity(item.getQuantity())
+                .unitPrice(item.getUnitPrice())
+                .build())
+            .collect(Collectors.toList()))
+        .build();
   }
-
-  public Client map(Long client) throws BadRequestException {
-    return clientRepo.findById(client).orElseThrow(BadRequestException::new);
-  }
-
 }

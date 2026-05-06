@@ -1,20 +1,41 @@
 package com.kruosant.bookwalker.mappers;
 
-
 import com.kruosant.bookwalker.domains.Client;
-import com.kruosant.bookwalker.dtos.client.*;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.kruosant.bookwalker.dtos.client.ClientBasicInfoDto;
+import com.kruosant.bookwalker.dtos.client.ClientFullDto;
+import com.kruosant.bookwalker.dtos.order.OrderBasicInfoDto;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface ClientMapper {
-  @Mapping(target = "id", ignore = true)
-  @Mapping(target = "orders", ignore = true)
-  Client toClient(ClientCreateDto dto);
+import java.util.stream.Collectors;
 
-  ClientFullDto toFullDto(Client client);
+@Component
+public class ClientMapper {
+  public ClientBasicInfoDto toBasicInfoDto(Client client) {
+    return ClientBasicInfoDto.builder()
+        .id(client.getId())
+        .name(client.getName())
+        .email(client.getEmail())
+        .build();
+  }
 
-  ClientBasicInfoDto toBasicInfoDto(Client client);
-
-  ClientPatchDto toPatchDto(ClientPutDto dto);
+  public ClientFullDto toFullDto(Client client) {
+    return ClientFullDto.builder()
+        .id(client.getId())
+        .name(client.getName())
+        .email(client.getEmail())
+        .city(client.getCity())
+        .role(client.getRole().name())
+        .status(client.getStatus().name())
+        .joinedAt(client.getJoinedAt())
+        .orders(client.getOrders().stream()
+            .map(order -> OrderBasicInfoDto.builder()
+                .id(order.getId())
+                .orderCode(order.getOrderCode())
+                .date(order.getDate())
+                .status(order.getStatus())
+                .total(order.getTotal())
+                .build())
+            .collect(Collectors.toList()))
+        .build();
+  }
 }

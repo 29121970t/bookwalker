@@ -1,36 +1,15 @@
 package com.kruosant.bookwalker.dtos.author;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import java.util.Set;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class AuthorPutDto {
-  @NotNull
-  @Schema(description = "Author's new name", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @NotBlank
   private String name;
-
-  @NotNull
-  @Schema(description = "Author's new middleName", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  private String middleName;
-
-  @NotNull
-  @Schema(description = "Author's list of book ids", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  private Set<Long> books;
-
-  @Schema(description = "Author's new surname", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  @NotNull
-  private String surname;
-
-  @NotNull
-  @Schema(description = "Author's new bio", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private String bio;
-
-
+  private String country;
+  private String website;
 }

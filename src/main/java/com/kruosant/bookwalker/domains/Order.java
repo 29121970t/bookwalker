@@ -1,31 +1,40 @@
 package com.kruosant.bookwalker.domains;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Table(name = "orders")
 @Entity
-@Setter
+@Table(name = "orders")
 @Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @NamedEntityGraph(
     name = "Order.full",
     attributeNodes = {
         @NamedAttributeNode("client"),
-        @NamedAttributeNode(value = "books", subgraph = "books-details")
-    },
-    subgraphs = {
-        @NamedSubgraph(
-            name = "books-details",
-            attributeNodes = {
-                @NamedAttributeNode("authors"),
-                @NamedAttributeNode("publisher")
-            }
-        )
+        @NamedAttributeNode("items")
     }
 )
 public class Order {
@@ -33,18 +42,18 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(optional = false)
+  private String orderCode;
+  private LocalDateTime date;
+  private String status;
+  private BigDecimal total;
+  private String paymentMethod;
+  private String deliveryCity;
+
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "client_id")
   private Client client;
 
-  private LocalDateTime date;
-
-  @ManyToMany
-  @JoinTable(
-      name = "order_book",
-      joinColumns = @JoinColumn(name = "order_id", referencedColumnName = "id"),
-      inverseJoinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id")
-  )
-  private Set<Book> books = new HashSet<>();
-
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<OrderItem> items = new ArrayList<>();
 }

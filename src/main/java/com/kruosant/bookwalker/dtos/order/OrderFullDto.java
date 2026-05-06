@@ -1,9 +1,13 @@
 package com.kruosant.bookwalker.dtos.order;
 
-import com.kruosant.bookwalker.dtos.book.BookBasicInfoDto;
 import com.kruosant.bookwalker.dtos.client.ClientBasicInfoDto;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +18,12 @@ import java.util.List;
 @Builder
 public class OrderFullDto {
   private Long id;
-  private ClientBasicInfoDto client;
+  private String orderCode;
   private LocalDateTime date;
-  private List<BookBasicInfoDto> books;
+  private String status;
+  private BigDecimal total;
+  private String paymentMethod;
+  private String deliveryCity;
+  private ClientBasicInfoDto client;
+  private List<OrderItemDto> items;
 }

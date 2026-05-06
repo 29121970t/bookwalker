@@ -1,8 +1,10 @@
 package com.kruosant.bookwalker.dtos.client;
 
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -11,6 +13,6 @@ import lombok.*;
 @Builder
 public class ClientBasicInfoDto {
   private Long id;
-  @Schema(description = "Clients's username", example = "abova", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String username;
+  private String name;
+  private String email;
 }

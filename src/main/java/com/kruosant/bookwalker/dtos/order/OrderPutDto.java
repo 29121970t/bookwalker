@@ -1,31 +1,21 @@
 package com.kruosant.bookwalker.dtos.order;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import lombok.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class OrderPutDto {
-  @NotNull(message = "field is required")
-  @Schema(description = "Order's client", requiredMode = Schema.RequiredMode.REQUIRED)
-  private Long client;
-
-  @Schema(description = "Order's date", requiredMode = Schema.RequiredMode.REQUIRED)
-  @PastOrPresent(message = "should not be in future")
-  @NotNull(message = "field is required")
+  @NotBlank
+  private String status;
   private LocalDateTime date;
-
-  @NotNull(message = "field is required")
-  @Schema(description = "Order's books", requiredMode = Schema.RequiredMode.REQUIRED)
-  private List<Long> books;
-
-
+  private String paymentMethod;
+  private String deliveryCity;
+  @NotEmpty
+  private List<OrderItemRequestDto> items;
 }

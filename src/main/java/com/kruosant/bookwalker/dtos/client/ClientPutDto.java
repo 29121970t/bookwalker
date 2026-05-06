@@ -1,23 +1,22 @@
 package com.kruosant.bookwalker.dtos.client;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.kruosant.bookwalker.domains.UserRole;
+import com.kruosant.bookwalker.domains.UserStatus;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ClientPutDto {
-  @NotBlank(message = "field is required")
-  @Schema(description = "Clients's username", example = "abova", requiredMode = Schema.RequiredMode.REQUIRED)
-  private String username;
-  @NotNull(message = "field is required")
-  @Schema(description = "Clients's orders", requiredMode = Schema.RequiredMode.REQUIRED)
-  private List<Long> orders;
-
+  @NotBlank
+  private String name;
+  @Email
+  @NotBlank
+  private String email;
+  private String city;
+  private String password;
+  private UserRole role;
+  private UserStatus status;
 }

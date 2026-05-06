@@ -1,16 +1,17 @@
 package com.kruosant.bookwalker.dtos.order;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class OrderPatchDto {
-  @Schema(description = "Order's books", requiredMode = Schema.RequiredMode.NOT_REQUIRED)
-  private List<Long> books;
+  private String status;
+  private LocalDateTime date;
+  private String paymentMethod;
+  private String deliveryCity;
+  private List<OrderItemRequestDto> items;
 }
