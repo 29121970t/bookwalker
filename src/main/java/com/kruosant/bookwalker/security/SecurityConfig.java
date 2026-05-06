@@ -34,6 +34,7 @@ public class SecurityConfig {
   private static final String TAGS_PATTERN = "/tags/**";
   private static final String CLIENTS_PATTERN = "/clients/**";
   private static final String ORDERS_PATTERN = "/orders/**";
+  private static final String ROLE_ADMIN = "ADMIN";
 
   @Bean
   public UserDetailsService userDetailsService(ClientRepository clientRepository) {
@@ -77,13 +78,13 @@ public class SecurityConfig {
               .requestMatchers("/auth/**", "/uploads/**", "/swagger-ui.html", "/swagger-ui/**", "/api-docs/**").permitAll()
               .requestMatchers(HttpMethod.GET, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN).permitAll()
               .requestMatchers(HttpMethod.GET, "/orders/me").authenticated()
-              .requestMatchers(HttpMethod.GET, ORDERS_PATTERN).hasRole("ADMIN")
-              .requestMatchers(HttpMethod.GET, CLIENTS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.GET, ORDERS_PATTERN).hasRole(ROLE_ADMIN)
+              .requestMatchers(HttpMethod.GET, CLIENTS_PATTERN).hasRole(ROLE_ADMIN)
               .requestMatchers(HttpMethod.POST, "/orders").authenticated()
-              .requestMatchers(HttpMethod.POST, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN).hasRole("ADMIN")
-              .requestMatchers(HttpMethod.PUT, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
-              .requestMatchers(HttpMethod.PATCH, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
-              .requestMatchers(HttpMethod.DELETE, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole("ADMIN")
+              .requestMatchers(HttpMethod.POST, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN).hasRole(ROLE_ADMIN)
+              .requestMatchers(HttpMethod.PUT, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole(ROLE_ADMIN)
+              .requestMatchers(HttpMethod.PATCH, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole(ROLE_ADMIN)
+              .requestMatchers(HttpMethod.DELETE, BOOKS_PATTERN, AUTHORS_PATTERN, PUBLISHERS_PATTERN, GENRES_PATTERN, TAGS_PATTERN, CLIENTS_PATTERN, ORDERS_PATTERN).hasRole(ROLE_ADMIN)
               .anyRequest().authenticated()
           );
       return http.build();
