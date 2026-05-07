@@ -1,7 +1,6 @@
-export const API_BASE_URL = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL
-  ?? "http://localhost:8080"
+export const API_BASE_URL = (import.meta as ImportMeta).env?.VITE_API_BASE_URL
+  ?? "http://localhost:8080/api"
 const TOKEN_KEY = "bookwalker-auth-token"
-
 type RequestOptions = RequestInit & {
   auth?: boolean
 }

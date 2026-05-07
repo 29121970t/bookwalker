@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.kruosant</groupId>
     <artifactId>bookwalker</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>bookwalker</name>
     <description>Demo project for Spring Boot</description>
     <url/>
@@ -111,6 +111,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.kruosant.bookwalker.BookwalkerApplication</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

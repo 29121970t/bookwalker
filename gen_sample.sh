@@ -2,13 +2,21 @@
 
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-http://localhost:8080}"
+if [[ -f .env ]]; then
+  while IFS='=' read -r key value; do
+    [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+    [[ -n "${!key+x}" ]] && continue
+    export "$key=$value"
+  done < .env
+fi
+
+BASE_URL="${BASE_URL:-http://localhost/api}"
 BOOK_COUNT="${BOOK_COUNT:-100}"
 OTHER_ENTITY_COUNT="${OTHER_ENTITY_COUNT:-10}"
 ORDER_COUNT="${ORDER_COUNT:-10}"
 ORDER_BATCH_SIZE="${ORDER_BATCH_SIZE:-20}"
-ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bookwalker.app}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bookwalker.local}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin}"
 CURL_OPTS=(
   --silent
   --show-error
@@ -43,6 +51,11 @@ extract_token() {
   extract_first_match '.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*'
 }
 
+api_url() {
+  local endpoint="${1#/}"
+  printf '%s/%s' "${BASE_URL%/}" "$endpoint"
+}
+
 json_escape() {
   local value="$1"
   value="${value//\\/\\\\}"
@@ -60,18 +73,18 @@ post_json() {
     "$@" \
     --request POST \
     --data "$payload" \
-    "${BASE_URL}${endpoint}"
+    "$(api_url "$endpoint")"
 }
 
 get_json() {
   local endpoint="$1"
   shift || true
-  curl "${CURL_OPTS[@]}" "$@" "${BASE_URL}${endpoint}"
+  curl "${CURL_OPTS[@]}" "$@" "$(api_url "$endpoint")"
 }
 
 check_api() {
   echo "Checking API availability at ${BASE_URL}..."
-  curl "${CURL_OPTS[@]}" "${BASE_URL}/api-docs" >/dev/null
+  curl "${CURL_OPTS[@]}" "$(api_url "/books")" >/dev/null
 }
 
 login_as_admin() {
@@ -80,7 +93,11 @@ login_as_admin() {
   payload="$(printf '{"email":"%s","password":"%s"}' \
     "$(json_escape "$ADMIN_EMAIL")" \
     "$(json_escape "$ADMIN_PASSWORD")")"
-  response="$(post_json "/auth/login" "$payload")"
+  if ! response="$(post_json "/auth/login" "$payload")"; then
+    echo "Admin login failed for ${ADMIN_EMAIL}." >&2
+    echo "Set ADMIN_EMAIL and ADMIN_PASSWORD to match the seeded admin account." >&2
+    exit 1
+  fi
   ADMIN_TOKEN="$(printf '%s' "$response" | extract_token)"
   if [[ -z "$ADMIN_TOKEN" ]]; then
     echo "Failed to retrieve admin token from /auth/login" >&2
@@ -100,14 +117,14 @@ post_admin_json() {
     --header "Authorization: Bearer ${ADMIN_TOKEN}" \
     --request POST \
     --data "$payload" \
-    "${BASE_URL}${endpoint}"
+    "$(api_url "$endpoint")"
 }
 
 get_admin_json() {
   local endpoint="$1"
   curl "${CURL_OPTS[@]}" \
     --header "Authorization: Bearer ${ADMIN_TOKEN}" \
-    "${BASE_URL}${endpoint}"
+    "$(api_url "$endpoint")"
 }
 
 create_genres() {
@@ -303,7 +320,7 @@ post_order_batch() {
     --header "Authorization: Bearer ${ADMIN_TOKEN}" \
     --request POST \
     --data "$json" \
-    "${BASE_URL}/orders/bulk" >/dev/null
+    "$(api_url "/orders/bulk")" >/dev/null
 }
 
 post_single_order() {

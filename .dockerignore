@@ -1,0 +1,9 @@
+frontend/
+.idea/
+.github/
+jmeter/
+logs/
+target/
+.gitignore
+.gitattributes
+checkstyle.xml
