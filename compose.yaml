@@ -37,11 +37,11 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/books"]
-      interval: 3ms
-      timeout: 5s
-      retries: 5
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/books"]
+    #   interval: 3ms
+    #   timeout: 5s
+    #   retries: 5
 volumes:
   pgdata:
 
