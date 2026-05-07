@@ -33,17 +33,21 @@ projects:
       dockerContext: ./frontend
       dockerfilePath: ./frontend/Dockerfile
       autoDeployTrigger: commit
-    - type: pserv
-      name: bookwalker-front
+    - type: web
+      name: bookwalker-back
       runtime: docker
       repo: https://github.com/29121970t/bookwalker
       plan: free
       envVars:
-      - key: PORT
-        sync: false
-      - key: SERVER_NAME
-        sync: false
+        - key: PORT
+          sync: false
+        - key: SERVER_NAME
+          sync: false
+        - key: BACKEND_URL
+          sync: false
+      
       region: frankfurt
       dockerContext: .
       dockerfilePath: ./Dockerfile
+
       autoDeployTrigger: commit
