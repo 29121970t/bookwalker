@@ -10,13 +10,13 @@ if [[ -f .env ]]; then
   done < .env
 fi
 
-BASE_URL="${BASE_URL:-http://localhost/api}"
+BASE_URL="${BASE_URL:-https://bookwalker-backend.onrender.com}"
 BOOK_COUNT="${BOOK_COUNT:-100}"
 OTHER_ENTITY_COUNT="${OTHER_ENTITY_COUNT:-10}"
 ORDER_COUNT="${ORDER_COUNT:-10}"
 ORDER_BATCH_SIZE="${ORDER_BATCH_SIZE:-20}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@bookwalker.local}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-29121970tt}"
 CURL_OPTS=(
   --silent
   --show-error
