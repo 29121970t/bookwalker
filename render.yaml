@@ -36,7 +36,7 @@ projects:
       dockerfilePath: ./frontend/Dockerfile
       autoDeployTrigger: commit
     - type: pserv
-      name: bookwalker-fron
+      name: bookwalker-front
       runtime: docker
       repo: https://github.com/29121970t/bookwalker
       plan: free
