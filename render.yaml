@@ -41,8 +41,6 @@ projects:
       envVars:
         - key: PORT
           sync: false
-        - key: SERVER_NAME
-          sync: false
         - key: BACKEND_URL
           sync: false
       
