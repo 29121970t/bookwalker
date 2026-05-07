@@ -5,7 +5,7 @@ FROM node:24-alpine as build
 WORKDIR /app
 
 ARG SERVER_NAME
-ENV VITE_API_BASE_URL="http://${SERVER_NAME}/api"
+ENV VITE_API_URL=$BACKEND_URL
 
 COPY . .
 
