@@ -9,8 +9,8 @@ RUN npm i
 RUN npm run build
 
 FROM nginx
-ARG PORT="8080"
-ENV PORT=$PORT
+ARG PORT
+ENV PORT=${PORT}
 
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY ./nginx/templates/ /etc/nginx/templates/

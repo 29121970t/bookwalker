@@ -3,13 +3,16 @@ services:
     build:
       context: ./frontend
       args:
-        - SERVER_NAME=${SERVER_NAME}
-        - BACKEND_URL=http://backend:8080
+        - API_URL=http://localhost:8080
+        - PORT=80
     ports:
-      - "80:80"
+      - 80:80
+    # depends_on:
+    #   backend:
+    #     condition: service_healthy
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
+
 
   db:
     image: postgres:latest

@@ -1,6 +1,9 @@
 package com.kruosant.bookwalker.security;
 
 import com.kruosant.bookwalker.repositories.ClientRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +21,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
 @Configuration
@@ -31,6 +37,9 @@ public class SecurityConfig {
   private static final String CLIENTS_PATTERN = "/clients/**";
   private static final String ORDERS_PATTERN = "/orders/**";
   private static final String ROLE_ADMIN = "ADMIN";
+
+  @Value("${cors.allowed.origins}")
+  private List<String> allowedOrigins;
 
   @Bean
   public UserDetailsService userDetailsService(ClientRepository clientRepository) {
@@ -66,7 +75,7 @@ public class SecurityConfig {
     try {
       http
           .csrf(csrf -> csrf.disable())
-          .cors(cors -> {})
+          .cors(cors -> cors.configurationSource(corsConfigurationSource()))
           .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authenticationProvider(authenticationProvider)
           .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -88,5 +97,17 @@ public class SecurityConfig {
       throw new BeanCreationException("Failed to create security filter chain", ex);
     }
   }
+      @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
 }
