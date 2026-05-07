@@ -55,4 +55,143 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) {
+    try {
+      return configuration.getAuthenticationManager();
+    } catch (Exception ex) {
+      throw new BeanCreationException("Failed to create authentication manager", ex);
+    }
+  }
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder) {
+
+    DaoAuthenticationProvider authenticationProvider =
+        new DaoAuthenticationProvider(userDetailsService);
+
+    authenticationProvider.setPasswordEncoder(passwordEncoder);
+
+    try {
+      http
+          .cors(Customizer.withDefaults())
+          .csrf(csrf -> csrf.disable())
+          .sessionManagement(session ->
+              session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .authenticationProvider(authenticationProvider)
+          .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+          .authorizeHttpRequests(auth -> auth
+
+              // Allow all preflight requests
+              .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+              .requestMatchers(
+                  "/auth/**",
+                  "/uploads/**",
+                  "/swagger-ui.html",
+                  "/swagger-ui/**",
+                  "/api-docs/**")
+              .permitAll()
+
+              .requestMatchers(
+                  HttpMethod.GET,
+                  BOOKS_PATTERN,
+                  AUTHORS_PATTERN,
+                  PUBLISHERS_PATTERN,
+                  GENRES_PATTERN,
+                  TAGS_PATTERN)
+              .permitAll()
+
+              .requestMatchers(HttpMethod.GET, "/orders/me")
+              .authenticated()
+
+              .requestMatchers(HttpMethod.GET, ORDERS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .requestMatchers(HttpMethod.GET, CLIENTS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .requestMatchers(HttpMethod.POST, "/orders")
+              .authenticated()
+
+              .requestMatchers(
+                  HttpMethod.POST,
+                  BOOKS_PATTERN,
+                  AUTHORS_PATTERN,
+                  PUBLISHERS_PATTERN,
+                  GENRES_PATTERN,
+                  TAGS_PATTERN,
+                  CLIENTS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .requestMatchers(
+                  HttpMethod.PUT,
+                  BOOKS_PATTERN,
+                  AUTHORS_PATTERN,
+                  PUBLISHERS_PATTERN,
+                  GENRES_PATTERN,
+                  TAGS_PATTERN,
+                  CLIENTS_PATTERN,
+                  ORDERS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .requestMatchers(
+                  HttpMethod.PATCH,
+                  BOOKS_PATTERN,
+                  AUTHORS_PATTERN,
+                  PUBLISHERS_PATTERN,
+                  CLIENTS_PATTERN,
+                  ORDERS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .requestMatchers(
+                  HttpMethod.DELETE,
+                  BOOKS_PATTERN,
+                  AUTHORS_PATTERN,
+                  PUBLISHERS_PATTERN,
+                  GENRES_PATTERN,
+                  TAGS_PATTERN,
+                  CLIENTS_PATTERN,
+                  ORDERS_PATTERN)
+              .hasRole(ROLE_ADMIN)
+
+              .anyRequest().authenticated());
+
+      return http.build();
+
+    } catch (Exception ex) {
+      throw new BeanCreationException("Failed to create security filter chain", ex);
+    }
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+
+    CorsConfiguration config = new CorsConfiguration();
+
+    config.setAllowedOrigins(allowedOrigins);
+
+    config.setAllowedMethods(List.of(
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+    ));
+
+    config.setAllowedHeaders(List.of("*"));
+    config.setAllowCredentials(true);
+
+    UrlBasedCorsConfigurationSource source =
+        new UrlBasedCorsConfigurationSource();
+
+    source.registerCorsConfiguration("/**", config);
+
+    return source;
+  }
 }
