@@ -1,0 +1,67 @@
+# Exported from Render on 2026-05-07T12:18:33Z
+version: "1"
+projects:
+- name: Bookwalker
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: bookwalker-fontend
+      runtime: docker
+      repo: https://github.com/29121970t/bookwalker
+      plan: free
+      envVars:
+      - key: DB_HOSTNAME
+        sync: false
+      - key: PORT
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: SERVER_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      region: frankfurt
+      dockerContext: ./frontend
+      dockerfilePath: ./frontend/Dockerfile
+      autoDeployTrigger: commit
+    - type: pserv
+      name: bookwalker-fron
+      runtime: docker
+      repo: https://github.com/29121970t/bookwalker
+      plan: free
+      envVars:
+      - key: DB_HOSTNAME
+        sync: false
+      - key: PORT
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: SERVER_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      region: frankfurt
+      dockerContext: .
+      dockerfilePath: ./Dockerfile
+      autoDeployTrigger: commit
