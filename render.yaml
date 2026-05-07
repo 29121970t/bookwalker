@@ -34,7 +34,7 @@ projects:
       dockerfilePath: ./frontend/Dockerfile
       autoDeployTrigger: commit
     - type: web
-      name: bookwalker-back
+      name: bookwalker-backend
       runtime: docker
       repo: https://github.com/29121970t/bookwalker
       plan: free
