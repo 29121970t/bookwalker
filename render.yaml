@@ -27,8 +27,6 @@ projects:
         sync: false
       - key: ADMIN_EMAIL
         sync: false
-      - key: SERVER_NAME
-        sync: false
       - key: DB_USER
         sync: false
       region: frankfurt
@@ -41,25 +39,9 @@ projects:
       repo: https://github.com/29121970t/bookwalker
       plan: free
       envVars:
-      - key: DB_HOSTNAME
-        sync: false
       - key: PORT
         sync: false
-      - key: DB_PORT
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: ADMIN_PASSWORD
-        sync: false
-      - key: ADMIN_NAME
-        sync: false
-      - key: ADMIN_EMAIL
-        sync: false
       - key: SERVER_NAME
-        sync: false
-      - key: DB_USER
         sync: false
       region: frankfurt
       dockerContext: .
