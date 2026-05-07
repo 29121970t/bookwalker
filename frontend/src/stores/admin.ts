@@ -43,6 +43,43 @@ interface ApiOrder {
   items: Array<{ book: { id: number }, quantity: number }>
 }
 
+interface ApiClient {
+  id: number
+  name: string
+  email: string
+  role: string
+  status: string
+  joinedAt: string
+  orders: Array<{ total: number }>
+}
+
+interface ApiAuthor {
+  id: number
+  name: string
+  bio?: string | null
+  country?: string | null
+  website?: string | null
+  booksCount?: number | null
+}
+
+interface ApiPublisher {
+  id: number
+  name: string
+  description?: string | null
+  country?: string | null
+  website?: string | null
+  booksCount?: number | null
+}
+
+interface ApiTag {
+  id: number
+  name: string
+  description?: string | null
+  color?: string | null
+  featured?: boolean | null
+  usageCount?: number | null
+}
+
 const books = ref<Book[]>([])
 const orders = ref<AdminOrder[]>([])
 const tags = ref<AdminTag[]>([])
@@ -96,7 +133,70 @@ function mapBook(book: ApiBook): Book {
   }
 }
 
-async function loadAll(force = false) {
+function mapAuthor(author: ApiAuthor): AdminAuthor {
+  return {
+    id: author.id,
+    name: author.name,
+    bio: author.bio ?? "",
+    country: author.country ?? "",
+    website: author.website ?? "",
+    featured: false,
+    booksCount: author.booksCount ?? books.value.filter((book) => (book.authorIds ?? []).includes(author.id)).length,
+  }
+}
+
+function mapPublisher(publisher: ApiPublisher): AdminPublisher {
+  return {
+    id: publisher.id,
+    name: publisher.name,
+    description: publisher.description ?? "",
+    country: publisher.country ?? "",
+    website: publisher.website ?? "",
+    featured: false,
+    booksCount: publisher.booksCount ?? books.value.filter((book) => (book.publisherIds ?? []).includes(publisher.id)).length,
+  }
+}
+
+function mapTag(tag: ApiTag): AdminTag {
+  return {
+    id: tag.id,
+    name: tag.name,
+    description: tag.description ?? "",
+    color: tag.color ?? "#0f766e",
+    featured: tag.featured ?? false,
+    usageCount: tag.usageCount ?? books.value.filter((book) => (book.tagIds ?? []).includes(tag.id)).length,
+  }
+}
+
+function mapOrder(order: ApiOrder): AdminOrder {
+  return {
+    entityId: order.id,
+    id: order.orderCode,
+    date: order.date,
+    status: order.status,
+    total: Number(order.total),
+    customerName: order.client?.name ?? "",
+    customerEmail: order.client?.email ?? "",
+    paymentMethod: order.paymentMethod ?? "",
+    deliveryCity: order.deliveryCity ?? "",
+    items: order.items.map((item) => ({ bookId: item.book.id, quantity: item.quantity })),
+  }
+}
+
+function mapUser(user: ApiClient): AdminUser {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role === "ADMIN" ? "Admin" : "Client",
+    status: user.status === "ACTIVE" ? "Active" : "Blocked",
+    joinedAt: user.joinedAt,
+    ordersCount: user.orders.length,
+    totalSpent: user.orders.reduce((sum, order) => sum + Number(order.total), 0),
+  }
+}
+
+async function loadAll(force = false, includeRestricted = false) {
   if (loadPromise && !force) {
     return loadPromise
   }
@@ -104,62 +204,26 @@ async function loadAll(force = false) {
   loadPromise = (async () => {
     const [booksData, authorsData, publishersData, tagsData, genresData] = await Promise.all([
       apiRequest<ApiBook[]>("/books", { auth: false }),
-      apiRequest<AdminAuthor[]>("/authors", { auth: false }),
-      apiRequest<AdminPublisher[]>("/publishers", { auth: false }),
-      apiRequest<AdminTag[]>("/tags", { auth: false }),
+      apiRequest<ApiAuthor[]>("/authors", { auth: false }),
+      apiRequest<ApiPublisher[]>("/publishers", { auth: false }),
+      apiRequest<ApiTag[]>("/tags", { auth: false }),
       apiRequest<Array<{ id: number, name: string, description?: string }>>("/genres", { auth: false }),
     ])
 
     books.value = booksData.map(mapBook)
-    authors.value = authorsData.map((author) => ({
-      ...author,
-      featured: author.featured ?? false,
-      booksCount: author.booksCount ?? books.value.filter((book) => (book.authorIds ?? []).includes(author.id)).length,
-    }))
-    publishers.value = publishersData.map((publisher) => ({
-      ...publisher,
-      featured: publisher.featured ?? false,
-      booksCount: publisher.booksCount ?? books.value.filter((book) => (book.publisherIds ?? []).includes(publisher.id)).length,
-    }))
-    tags.value = tagsData.map((tag) => ({
-      ...tag,
-      featured: tag.featured ?? false,
-      usageCount: tag.usageCount ?? books.value.filter((book) => (book.tagIds ?? []).includes(tag.id)).length,
-    }))
+    authors.value = authorsData.map(mapAuthor)
+    publishers.value = publishersData.map(mapPublisher)
+    tags.value = tagsData.map(mapTag)
     genresCatalog.value = genresData
 
-    try {
+    if (includeRestricted) {
       const [ordersData, usersData] = await Promise.all([
         apiRequest<ApiOrder[]>("/orders"),
-        apiRequest<Array<{ id: number, name: string, email: string, role: string, status: string, joinedAt: string, orders: Array<{ total: number }> }>>("/clients"),
+        apiRequest<ApiClient[]>("/clients"),
       ])
 
-      orders.value = ordersData.map((order) => ({
-        entityId: order.id,
-        id: order.orderCode,
-        date: order.date,
-        status: order.status,
-        total: Number(order.total),
-        customerName: order.client?.name ?? "",
-        customerEmail: order.client?.email ?? "",
-        paymentMethod: order.paymentMethod ?? "",
-        deliveryCity: order.deliveryCity ?? "",
-        items: order.items.map((item) => ({ bookId: item.book.id, quantity: item.quantity })),
-      }))
-
-      users.value = usersData.map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role === "ADMIN" ? "Admin" : "Client",
-        status: user.status === "ACTIVE" ? "Active" : "Blocked",
-        joinedAt: user.joinedAt,
-        ordersCount: user.orders.length,
-        totalSpent: user.orders.reduce((sum, order) => sum + Number(order.total), 0),
-      }))
-    } catch {
-      orders.value = []
-      users.value = []
+      orders.value = ordersData.map(mapOrder)
+      users.value = usersData.map(mapUser)
     }
   })()
 
@@ -170,23 +234,22 @@ async function loadAll(force = false) {
   }
 }
 
+async function createOrder(payload: Record<string, unknown>) {
+  const created = await apiRequest<ApiOrder>("/orders", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapOrder(created)
+  orders.value = [mapped, ...orders.value]
+  return mapped
+}
+
 async function updateOrder(id: number, payload: Record<string, unknown>) {
   const updated = await apiRequest<ApiOrder>(`/orders/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   })
-  const mapped: AdminOrder = {
-    entityId: updated.id,
-    id: updated.orderCode,
-    date: updated.date,
-    status: updated.status,
-    total: Number(updated.total),
-    customerName: updated.client?.name ?? "",
-    customerEmail: updated.client?.email ?? "",
-    paymentMethod: updated.paymentMethod ?? "",
-    deliveryCity: updated.deliveryCity ?? "",
-    items: updated.items.map((item) => ({ bookId: item.book.id, quantity: item.quantity })),
-  }
+  const mapped = mapOrder(updated)
   orders.value = orders.value.map((order) => (order.entityId === id ? mapped : order))
   return mapped
 }
@@ -201,7 +264,17 @@ async function updateUser(id: number, payload: Record<string, unknown>) {
     method: "PATCH",
     body: JSON.stringify(payload),
   })
-  await loadAll(true)
+  await loadAll(true, true)
+}
+
+async function createUser(payload: Record<string, unknown>) {
+  const created = await apiRequest<ApiClient>("/clients", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapUser(created)
+  users.value = [mapped, ...users.value]
+  return mapped
 }
 
 async function deleteUserRemote(id: number) {
@@ -245,33 +318,80 @@ async function deleteBookRemote(id: number) {
   books.value = books.value.filter((book) => book.id !== id)
 }
 
-function refreshTagCatalog() {
-  tags.value = tags.value.map((tag) => ({
-    ...tag,
-    usageCount: books.value.filter((book) => (book.tagIds ?? []).includes(tag.id)).length,
-  }))
+async function createTag(payload: Record<string, unknown>) {
+  const created = await apiRequest<ApiTag>("/tags", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapTag(created)
+  tags.value = [mapped, ...tags.value]
+  return mapped
 }
 
-function refreshAuthorCatalog() {
-  authors.value = authors.value.map((author) => ({
-    ...author,
-    booksCount: books.value.filter((book) => (book.authorIds ?? []).includes(author.id)).length,
-  }))
+async function updateTag(id: number, payload: Record<string, unknown>) {
+  const updated = await apiRequest<ApiTag>(`/tags/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapTag(updated)
+  tags.value = tags.value.map((tag) => (tag.id === id ? mapped : tag))
+  return mapped
 }
 
-function refreshPublisherCatalog() {
-  publishers.value = publishers.value.map((publisher) => ({
-    ...publisher,
-    booksCount: books.value.filter((book) => (book.publisherIds ?? []).includes(publisher.id)).length,
-  }))
+async function deleteTagRemote(id: number) {
+  await apiRequest<void>(`/tags/${id}`, { method: "DELETE" })
+  tags.value = tags.value.filter((tag) => tag.id !== id)
 }
 
-function renameTagAcrossBooks(..._args: unknown[]) {}
-function renameAuthorAcrossBooks(..._args: unknown[]) {}
-function renamePublisherAcrossBooks(..._args: unknown[]) {}
-function removeTagFromBooks(..._args: unknown[]) {}
-function removeAuthorFromBooks(..._args: unknown[]) {}
-function removePublisherFromBooks(..._args: unknown[]) {}
+async function createAuthor(payload: Record<string, unknown>) {
+  const created = await apiRequest<ApiAuthor>("/authors", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapAuthor(created)
+  authors.value = [mapped, ...authors.value]
+  return mapped
+}
+
+async function updateAuthor(id: number, payload: Record<string, unknown>) {
+  const updated = await apiRequest<ApiAuthor>(`/authors/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapAuthor(updated)
+  authors.value = authors.value.map((author) => (author.id === id ? mapped : author))
+  return mapped
+}
+
+async function deleteAuthorRemote(id: number) {
+  await apiRequest<void>(`/authors/${id}`, { method: "DELETE" })
+  authors.value = authors.value.filter((author) => author.id !== id)
+}
+
+async function createPublisher(payload: Record<string, unknown>) {
+  const created = await apiRequest<ApiPublisher>("/publishers", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapPublisher(created)
+  publishers.value = [mapped, ...publishers.value]
+  return mapped
+}
+
+async function updatePublisher(id: number, payload: Record<string, unknown>) {
+  const updated = await apiRequest<ApiPublisher>(`/publishers/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  })
+  const mapped = mapPublisher(updated)
+  publishers.value = publishers.value.map((publisher) => (publisher.id === id ? mapped : publisher))
+  return mapped
+}
+
+async function deletePublisherRemote(id: number) {
+  await apiRequest<void>(`/publishers/${id}`, { method: "DELETE" })
+  publishers.value = publishers.value.filter((publisher) => publisher.id !== id)
+}
 
 export function useAdminStore() {
   void loadAll()
@@ -291,18 +411,20 @@ export function useAdminStore() {
     updateBook,
     uploadBookCover,
     deleteBookRemote,
+    createOrder,
+    createTag,
+    updateTag,
+    deleteTagRemote,
+    createAuthor,
+    updateAuthor,
+    deleteAuthorRemote,
+    createPublisher,
+    updatePublisher,
+    deletePublisherRemote,
     updateOrder,
     deleteOrderRemote,
+    createUser,
     updateUser,
     deleteUserRemote,
-    refreshTagCatalog,
-    refreshAuthorCatalog,
-    refreshPublisherCatalog,
-    renameTagAcrossBooks,
-    renameAuthorAcrossBooks,
-    renamePublisherAcrossBooks,
-    removeTagFromBooks,
-    removeAuthorFromBooks,
-    removePublisherFromBooks,
   }
 }

@@ -10,16 +10,10 @@ const authStore = useAuthStore()
 
 const cart = useLocalStorage<Record<number, number>>("bookwalker-cart", {})
 const orders = ref<Order[]>([])
-const wishlistIds = [1]
 let initPromise: Promise<void> | null = null
 
 const booksById = computed(() => new Map(adminStore.books.value.map((book) => [book.id, book])))
-
-const wishlist = computed(() =>
-  wishlistIds
-    .map((id) => booksById.value.get(id))
-    .filter((book): book is Book => Boolean(book)),
-)
+const wishlist = computed<Book[]>(() => [])
 
 const cartItems = computed(() =>
   Object.entries(cart.value)

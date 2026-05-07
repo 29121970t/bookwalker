@@ -22,6 +22,21 @@ const panel = useAdminPanel()
         <Label>Order ID</Label>
         <Input v-model="panel.orderForm.id" placeholder="BW-2099" disabled />
       </div>
+      <div v-if="panel.dialogMode.value === 'create'" class="space-y-2">
+        <Label>Customer</Label>
+        <select
+          v-model.number="panel.orderForm.clientId"
+          class="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
+          :aria-invalid="panel.hasFieldError('order.client')"
+          required
+        >
+          <option :value="null" disabled>Select customer</option>
+          <option v-for="user in panel.userOptions.value" :key="user.id" :value="user.id">
+            {{ user.label }}
+          </option>
+        </select>
+        <p v-if="panel.hasFieldError('order.client')" class="text-sm text-red-600">{{ panel.fieldError('order.client') }}</p>
+      </div>
       <div class="space-y-2">
         <Label>Date</Label>
         <Input v-model="panel.orderForm.date" type="datetime-local" required :aria-invalid="panel.hasFieldError('order.date')" />
@@ -45,11 +60,11 @@ const panel = useAdminPanel()
         <Label>Total</Label>
         <Input :model-value="panel.orderForm.total.toFixed(2)" disabled />
       </div>
-      <div class="space-y-2">
+      <div v-if="panel.dialogMode.value === 'edit'" class="space-y-2">
         <Label>Customer name</Label>
         <Input v-model="panel.orderForm.customerName" maxlength="255" disabled />
       </div>
-      <div class="space-y-2">
+      <div v-if="panel.dialogMode.value === 'edit'" class="space-y-2">
         <Label>Customer email</Label>
         <Input v-model="panel.orderForm.customerEmail" type="email" disabled />
       </div>

@@ -36,6 +36,7 @@ type BookForm = {
 
 type OrderForm = {
   entityId: number | null
+  clientId: number | null
   id: string
   date: string
   status: string
@@ -59,6 +60,7 @@ type UserForm = {
   id: number
   name: string
   email: string
+  password: string
   role: AdminUser["role"]
   status: AdminUser["status"]
   joinedAt: string
@@ -103,20 +105,26 @@ const {
   updateBook,
   uploadBookCover,
   deleteBookRemote,
+  createOrder,
+  createTag,
+  updateTag,
+  deleteTagRemote,
+  createAuthor,
+  updateAuthor,
+  deleteAuthorRemote,
+  createPublisher,
+  updatePublisher,
+  deletePublisherRemote,
   updateOrder,
   deleteOrderRemote,
+  createUser,
   updateUser,
   deleteUserRemote,
-  refreshTagCatalog,
-  refreshAuthorCatalog,
-  refreshPublisherCatalog,
-  renameTagAcrossBooks,
-  renameAuthorAcrossBooks,
-  renamePublisherAcrossBooks,
-  removeTagFromBooks,
-  removeAuthorFromBooks,
-  removePublisherFromBooks,
 } = useAdminStore()
+
+void loadAll(true, true).catch((error) => {
+  toast.error(error instanceof Error ? error.message : "Failed to load admin data")
+})
 
 const dialogOpen = ref(false)
 const dialogSection = ref<AdminSection>("books")
@@ -181,9 +189,9 @@ const dialogTitles: Record<AdminSection, string> = {
 
 const canCreateSection: Record<AdminSection, boolean> = {
   books: true,
-  orders: false,
+  orders: true,
   tags: true,
-  users: false,
+  users: true,
   authors: true,
   publishers: true,
 }
@@ -220,13 +228,13 @@ const dashboardStats = computed(() => [
   {
     title: "Authors",
     value: authors.value.length.toString(),
-    note: `${authors.value.filter((author) => author.featured).length} featured`,
+    note: `${authors.value.reduce((sum, author) => sum + author.booksCount, 0)} linked books`,
     icon: PenSquare,
   },
   {
     title: "Publishers",
     value: publishers.value.length.toString(),
-    note: `${publishers.value.filter((publisher) => publisher.featured).length} featured`,
+    note: `${publishers.value.reduce((sum, publisher) => sum + publisher.booksCount, 0)} linked books`,
     icon: Building2,
   },
   {
@@ -251,6 +259,7 @@ const authorOptions = computed(() => authors.value.map((author) => ({ id: author
 const publisherOptions = computed(() => publishers.value.map((publisher) => ({ id: publisher.id, label: publisher.name })))
 const tagOptions = computed(() => tags.value.map((tag) => ({ id: tag.id, label: tag.name })))
 const genreOptions = computed(() => genresCatalog.value.map((genre) => ({ id: genre.id, label: genre.name })))
+const userOptions = computed(() => users.value.map((user) => ({ id: user.id, label: `${user.name} (${user.email})` })))
 
 const filteredBooks = computed(() => {
   const query = search.books.trim().toLowerCase()
@@ -390,6 +399,7 @@ function createEmptyBookForm(): BookForm {
 function createEmptyOrderForm(): OrderForm {
   return {
     entityId: null,
+    clientId: null,
     id: "",
     date: new Date().toISOString().slice(0, 16),
     status: "Processing",
@@ -411,6 +421,7 @@ function createEmptyUserForm(): UserForm {
     id: 0,
     name: "",
     email: "",
+    password: "",
     role: "Client",
     status: "Active",
     joinedAt: "2026-04-29",
@@ -488,10 +499,6 @@ function toIsoDateTime(value: string) {
   return value.length === 16 ? `${value}:00` : value
 }
 
-function nextNumericId(items: Array<{ id: number }>) {
-  return items.length > 0 ? Math.max(...items.map((item) => item.id)) + 1 : 1
-}
-
 function openCreateDialog(section: AdminSection) {
   dialogMode.value = "create"
   dialogSection.value = section
@@ -542,6 +549,7 @@ function openEditDialog(
     const order = entity as AdminOrder
     Object.assign(orderForm, {
       entityId: order.entityId,
+      clientId: users.value.find((user) => user.email === order.customerEmail)?.id ?? null,
       id: order.id,
       date: formatDateTimeLocal(order.date),
       status: order.status,
@@ -555,7 +563,7 @@ function openEditDialog(
   }
 
   if (section === "tags") Object.assign(tagForm, entity as AdminTag)
-  if (section === "users") Object.assign(userForm, entity as AdminUser)
+  if (section === "users") Object.assign(userForm, { ...(entity as AdminUser), password: "" })
 
   if (section === "authors") {
     const author = entity as AdminAuthor
@@ -607,6 +615,7 @@ function validateBookForm() {
 
 function validateOrderForm() {
   clearValidationErrors()
+  if (dialogMode.value === "create" && orderForm.clientId == null) addValidationError("order.client", "Select a customer.")
   if (!ORDER_STATUSES.includes(orderForm.status as typeof ORDER_STATUSES[number])) addValidationError("order.status", "Select a valid order status.")
   if (!PAYMENT_METHODS.includes(orderForm.paymentMethod as typeof PAYMENT_METHODS[number])) addValidationError("order.paymentMethod", "Select a valid payment method.")
   if (!orderForm.date) addValidationError("order.date", "Order date is required.")
@@ -625,6 +634,7 @@ function validateUserForm() {
   else if (userForm.name.trim().length > 255) addValidationError("user.name", "User name is too long.")
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email.trim())) addValidationError("user.email", "Enter a valid email address.")
   else if (userForm.email.trim().length > 255) addValidationError("user.email", "Email is too long.")
+  if (dialogMode.value === "create" && !userForm.password.trim()) addValidationError("user.password", "Password is required.")
 
   return !hasValidationErrors()
 }
@@ -692,7 +702,7 @@ async function saveBookDialog() {
     await uploadBookCover(savedBook.id, selectedBookCover.value)
   }
 
-  await loadAll(true)
+  await loadAll(true, true)
   dialogOpen.value = false
   resetForm("books")
   toast.success(dialogMode.value === "edit" ? "Book updated" : "Book created")
@@ -700,41 +710,58 @@ async function saveBookDialog() {
 
 async function saveOrderDialog() {
   if (!validateOrderForm()) return
-  if (orderForm.entityId == null) {
-    throw new Error("Creating orders from the admin dialog is not supported.")
-  }
-
-  await updateOrder(orderForm.entityId, {
+  const payload = {
     status: orderForm.status,
     paymentMethod: orderForm.paymentMethod,
     deliveryCity: orderForm.deliveryCity.trim(),
     date: toIsoDateTime(orderForm.date),
     items: orderForm.items.map((item) => ({ bookId: item.bookId, quantity: item.quantity })),
-  })
+  }
 
-  await loadAll(true)
+  if (dialogMode.value === "edit") {
+    if (orderForm.entityId == null) {
+      throw new Error("Missing order ID.")
+    }
+    await updateOrder(orderForm.entityId, payload)
+  } else {
+    await createOrder({
+      ...payload,
+      clientId: orderForm.clientId,
+    })
+  }
+
+  await loadAll(true, true)
   dialogOpen.value = false
   clearValidationErrors()
-  toast.success("Order updated")
+  toast.success(dialogMode.value === "edit" ? "Order updated" : "Order created")
 }
 
 async function saveUserDialog() {
   if (!validateUserForm()) return
-  if (!userForm.id) {
-    throw new Error("Creating users from the admin dialog is not supported.")
-  }
-
-  await updateUser(userForm.id, {
+  const payload: Record<string, unknown> = {
     name: userForm.name.trim(),
     email: userForm.email.trim(),
     role: userForm.role === "Admin" ? "ADMIN" : "CUSTOMER",
-    status: userForm.status === "Active" ? "ACTIVE" : "BLOCKED",
-  })
+  }
 
-  await loadAll(true)
+  if (userForm.password.trim()) {
+    payload.password = userForm.password.trim()
+  }
+
+  if (dialogMode.value === "edit") {
+    if (!userForm.id) {
+      throw new Error("Missing user ID.")
+    }
+    payload.status = userForm.status === "Active" ? "ACTIVE" : "BLOCKED"
+    await updateUser(userForm.id, payload)
+  } else {
+    await createUser(payload)
+  }
+
+  await loadAll(true, true)
   dialogOpen.value = false
   clearValidationErrors()
-  toast.success("User updated")
+  toast.success(dialogMode.value === "edit" ? "User updated" : "User created")
 }
 
 async function saveDialog() {
@@ -753,23 +780,19 @@ async function saveDialog() {
 
     if (dialogSection.value === "tags") {
       if (!validateTagForm()) return
-      const previous = tags.value.find((tag) => tag.id === tagForm.id)
-      const payload: AdminTag = {
-        id: dialogMode.value === "edit" ? tagForm.id : nextNumericId(tags.value),
+      const payload = {
         name: tagForm.name.trim(),
         description: tagForm.description.trim(),
         color: tagForm.color.trim(),
         featured: tagForm.featured,
-        usageCount: previous?.usageCount ?? 0,
       }
-      tags.value = dialogMode.value === "edit"
-        ? tags.value.map((tag) => (tag.id === payload.id ? payload : tag))
-        : [payload, ...tags.value]
-      if (dialogMode.value === "edit" && previous && previous.name !== payload.name) {
-        renameTagAcrossBooks(previous.name, payload.name)
+
+      if (dialogMode.value === "edit") {
+        await updateTag(tagForm.id, payload)
       } else {
-        refreshTagCatalog()
+        await createTag(payload)
       }
+      await loadAll(true, true)
     }
 
     if (dialogSection.value === "users") {
@@ -779,46 +802,36 @@ async function saveDialog() {
 
     if (dialogSection.value === "authors") {
       if (!validateAuthorForm()) return
-      const previous = authors.value.find((author) => author.id === authorForm.id)
-      const payload: AdminAuthor = {
-        id: dialogMode.value === "edit" ? authorForm.id : nextNumericId(authors.value),
+      const payload = {
         name: authorForm.name.trim(),
         bio: authorForm.bio.trim(),
         country: authorForm.country.trim(),
         website: authorForm.website.trim(),
-        featured: authorForm.featured,
-        booksCount: previous?.booksCount ?? 0,
       }
-      authors.value = dialogMode.value === "edit"
-        ? authors.value.map((author) => (author.id === payload.id ? payload : author))
-        : [payload, ...authors.value]
-      if (dialogMode.value === "edit" && previous && previous.name !== payload.name) {
-        renameAuthorAcrossBooks(previous.name, payload.name)
+
+      if (dialogMode.value === "edit") {
+        await updateAuthor(authorForm.id, payload)
       } else {
-        refreshAuthorCatalog()
+        await createAuthor(payload)
       }
+      await loadAll(true, true)
     }
 
     if (dialogSection.value === "publishers") {
       if (!validatePublisherForm()) return
-      const previous = publishers.value.find((publisher) => publisher.id === publisherForm.id)
-      const payload: AdminPublisher = {
-        id: dialogMode.value === "edit" ? publisherForm.id : nextNumericId(publishers.value),
+      const payload = {
         name: publisherForm.name.trim(),
         description: publisherForm.description.trim(),
         country: publisherForm.country.trim(),
         website: publisherForm.website.trim(),
-        featured: publisherForm.featured,
-        booksCount: previous?.booksCount ?? 0,
       }
-      publishers.value = dialogMode.value === "edit"
-        ? publishers.value.map((publisher) => (publisher.id === payload.id ? payload : publisher))
-        : [payload, ...publishers.value]
-      if (dialogMode.value === "edit" && previous && previous.name !== payload.name) {
-        renamePublisherAcrossBooks(previous.name, payload.name)
+
+      if (dialogMode.value === "edit") {
+        await updatePublisher(publisherForm.id, payload)
       } else {
-        refreshPublisherCatalog()
+        await createPublisher(payload)
       }
+      await loadAll(true, true)
     }
 
     dialogOpen.value = false
@@ -834,7 +847,7 @@ async function deleteBook(book: Book) {
   if (!window.confirm(`Delete "${book.title}" from catalog?`)) return
   try {
     await deleteBookRemote(book.id)
-    await loadAll(true)
+    await loadAll(true, true)
     toast.success("Book deleted")
   } catch (error) {
     toast.error(error instanceof Error ? error.message : "Failed to delete book")
@@ -845,40 +858,55 @@ async function deleteOrder(order: AdminOrder) {
   if (!window.confirm(`Delete order ${order.id}?`)) return
   try {
     await deleteOrderRemote(order.entityId)
-    await loadAll(true)
+    await loadAll(true, true)
     toast.success("Order deleted")
   } catch (error) {
     toast.error(error instanceof Error ? error.message : "Failed to delete order")
   }
 }
 
-function deleteTag(tag: AdminTag) {
+async function deleteTag(tag: AdminTag) {
   if (!window.confirm(`Delete tag "${tag.name}" and remove it from books?`)) return
-  tags.value = tags.value.filter((item) => item.id !== tag.id)
-  removeTagFromBooks(tag.name)
+  try {
+    await deleteTagRemote(tag.id)
+    await loadAll(true, true)
+    toast.success("Tag deleted")
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : "Failed to delete tag")
+  }
 }
 
 async function deleteUser(user: AdminUser) {
   if (!window.confirm(`Delete user ${user.name}?`)) return
   try {
     await deleteUserRemote(user.id)
-    await loadAll(true)
+    await loadAll(true, true)
     toast.success("User deleted")
   } catch (error) {
     toast.error(error instanceof Error ? error.message : "Failed to delete user")
   }
 }
 
-function deleteAuthor(author: AdminAuthor) {
-  if (!window.confirm(`Delete author "${author.name}" and replace linked books with "Unknown Author"?`)) return
-  authors.value = authors.value.filter((item) => item.id !== author.id)
-  removeAuthorFromBooks(author.name)
+async function deleteAuthor(author: AdminAuthor) {
+  if (!window.confirm(`Delete author "${author.name}"?`)) return
+  try {
+    await deleteAuthorRemote(author.id)
+    await loadAll(true, true)
+    toast.success("Author deleted")
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : "Failed to delete author")
+  }
 }
 
-function deletePublisher(publisher: AdminPublisher) {
-  if (!window.confirm(`Delete publisher "${publisher.name}" and replace linked books with "Independent Press"?`)) return
-  publishers.value = publishers.value.filter((item) => item.id !== publisher.id)
-  removePublisherFromBooks(publisher.name)
+async function deletePublisher(publisher: AdminPublisher) {
+  if (!window.confirm(`Delete publisher "${publisher.name}"?`)) return
+  try {
+    await deletePublisherRemote(publisher.id)
+    await loadAll(true, true)
+    toast.success("Publisher deleted")
+  } catch (error) {
+    toast.error(error instanceof Error ? error.message : "Failed to delete publisher")
+  }
 }
 
 function badgeVariantForStatus(status: string) {
@@ -931,6 +959,7 @@ export function useAdminPanel() {
     publisherOptions,
     tagOptions,
     genreOptions,
+    userOptions,
     orderStatuses: ORDER_STATUSES,
     paymentMethods: PAYMENT_METHODS,
     booksById,
