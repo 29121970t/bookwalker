@@ -7,8 +7,8 @@ import com.kruosant.bookwalker.dtos.auth.AuthResponseDto;
 import com.kruosant.bookwalker.dtos.auth.LoginRequestDto;
 import com.kruosant.bookwalker.dtos.auth.MeDto;
 import com.kruosant.bookwalker.dtos.auth.RegisterRequestDto;
-import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.exceptions.ConflictException;
+import com.kruosant.bookwalker.repositories.ClientRepository;
 import com.kruosant.bookwalker.security.AuthenticatedClientService;
 import com.kruosant.bookwalker.security.ClientPrincipal;
 import com.kruosant.bookwalker.security.JwtService;
@@ -18,7 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
@@ -35,7 +40,9 @@ public class AuthController {
   @PostMapping("/login")
   public AuthResponseDto login(@Valid @RequestBody LoginRequestDto dto) {
     String normalizedEmail = normalizeEmail(dto.getEmail());
-    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(normalizedEmail, dto.getPassword()));
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(normalizedEmail, dto.getPassword())
+    );
     Client client = clientRepository.findFirstByEmailIgnoreCase(normalizedEmail).orElseThrow();
     String token = jwtService.generateToken(new ClientPrincipal(client));
     return AuthResponseDto.builder()

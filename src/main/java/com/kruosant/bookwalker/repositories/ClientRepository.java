@@ -8,9 +8,13 @@ import java.util.Optional;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
   List<Client> findAllByEmailIgnoreCaseOrderByIdAsc(String email);
+
   boolean existsByEmailIgnoreCase(String email);
+
   boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+
   boolean existsByNameIgnoreCase(String name);
+
   boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 
   default Optional<Client> findFirstByEmailIgnoreCase(String email) {

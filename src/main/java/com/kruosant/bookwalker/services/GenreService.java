@@ -45,6 +45,10 @@ public class GenreService {
   }
 
   private GenreDto toDto(Genre genre) {
-    return GenreDto.builder().id(genre.getId()).name(genre.getName()).description(genre.getDescription()).build();
+    return GenreDto.builder()
+        .id(genre.getId())
+        .name(genre.getName())
+        .description(genre.getDescription())
+        .build();
   }
 }

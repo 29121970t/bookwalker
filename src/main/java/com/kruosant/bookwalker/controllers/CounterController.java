@@ -1,6 +1,6 @@
 package com.kruosant.bookwalker.controllers;
 
-import com.kruosant.bookwalker.dtos.counter.RaceDemoDTO;
+import com.kruosant.bookwalker.dtos.counter.RaceDemoDto;
 import com.kruosant.bookwalker.services.CounterService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -17,7 +17,7 @@ public class CounterController {
 
 
   @GetMapping("/raceDemo")
-  public RaceDemoDTO demo() {
+  public RaceDemoDto demo() {
     return counterService.runDemo();
   }
 

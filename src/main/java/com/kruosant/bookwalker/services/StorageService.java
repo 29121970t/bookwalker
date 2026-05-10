@@ -25,9 +25,14 @@ public class StorageService {
     if (file == null || file.isEmpty()) {
       throw new BadRequestException();
     }
-    String filename = UUID.randomUUID() + "-" + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
+    String filename = UUID.randomUUID() + "-"
+        + file.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_");
     try {
-      Files.copy(file.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(
+          file.getInputStream(),
+          uploadDir.resolve(filename),
+          StandardCopyOption.REPLACE_EXISTING
+      );
       return filename;
     } catch (IOException e) {
       throw new StorageException("Failed to store file", e);

@@ -74,12 +74,18 @@ public class ClientService {
       }
       client.setEmail(normalizedEmail);
     }
-    if (dto.getCity() != null) client.setCity(dto.getCity());
+    if (dto.getCity() != null) {
+      client.setCity(dto.getCity());
+    }
     if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
       client.setPassword(passwordEncoder.encode(dto.getPassword()));
     }
-    if (dto.getRole() != null) client.setRole(dto.getRole());
-    if (dto.getStatus() != null) client.setStatus(dto.getStatus());
+    if (dto.getRole() != null) {
+      client.setRole(dto.getRole());
+    }
+    if (dto.getStatus() != null) {
+      client.setStatus(dto.getStatus());
+    }
     return clientMapper.toFullDto(clientRepository.save(client));
   }
 

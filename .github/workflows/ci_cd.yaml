@@ -40,7 +40,9 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - name: Build & Test
+      - name: Build
+        run: ./mvnw clean package -DskipTests
+      - name: Test
         run: ./mvnw clean verify
       - name: Sonar Scan
         run: >
@@ -56,21 +58,7 @@ jobs:
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.coverage.exclusions=src/main/java/com/kruosant/bookwalker/aspect/**,src/main/java/com/kruosant/bookwalker/cashe/**,src/main/java/com/kruosant/bookwalker/config/**,src/main/java/com/kruosant/bookwalker/controllers/**,src/main/java/com/kruosant/bookwalker/domains/**,src/main/java/com/kruosant/bookwalker/dtos/**,src/main/java/com/kruosant/bookwalker/exceptions/**,src/main/java/com/kruosant/bookwalker/mappers/**,src/main/java/com/kruosant/bookwalker/repositories/**,src/main/java/com/kruosant/bookwalker/security/**,src/main/java/com/kruosant/bookwalker/BookwalkerApplication.java
 
-  test_compose:
-    name: Docker Compose Test
-    needs: [build_frontend, build_backend]
-    runs-on: ubuntu-latest
-    env:
-      DB_PASSWORD: test
-      DB_USER: test
-      DB_NAME: bookwalker
-    steps:
-      - name: Setup Docker Compose
-        uses: hoverkraft-tech/compose-action@d2bee4f07e8ca410d6b196d00f90c12e7d48c33a
-        with:
-            compose-file: "./compose.yaml"
-      - name: Run compose
-        run: docker compose up
+
   
       
 

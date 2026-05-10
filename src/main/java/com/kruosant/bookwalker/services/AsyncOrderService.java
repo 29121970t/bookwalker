@@ -29,11 +29,18 @@ public class AsyncOrderService {
 
   @Autowired
   public AsyncOrderService(OrderService orderService) {
-    this(orderService, new ConcurrentHashMap<>(),
-        CompletableFuture.delayedExecutor(BULK_ASYNC_DELAY_MS, TimeUnit.MILLISECONDS));
+    this(
+        orderService,
+        new ConcurrentHashMap<>(),
+        CompletableFuture.delayedExecutor(BULK_ASYNC_DELAY_MS, TimeUnit.MILLISECONDS)
+    );
   }
 
-  AsyncOrderService(OrderService orderService, Map<String, AsyncTask> tasks, Executor delayedExecutor) {
+  AsyncOrderService(
+      OrderService orderService,
+      Map<String, AsyncTask> tasks,
+      Executor delayedExecutor
+  ) {
     this.orderService = orderService;
     this.tasks = tasks;
     this.delayedExecutor = delayedExecutor;

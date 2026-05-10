@@ -38,7 +38,9 @@ public class OrderService {
 
   @Transactional(readOnly = true)
   public List<OrderFullDto> getForClient(Long clientId) {
-    return orderRepository.findAllByClientId(clientId).stream().map(orderMapper::toFullDto).toList();
+    return orderRepository.findAllByClientId(clientId).stream()
+        .map(orderMapper::toFullDto)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -59,11 +61,21 @@ public class OrderService {
   @Transactional
   public OrderFullDto update(Long id, OrderPatchDto dto) {
     Order order = getEntity(id);
-    if (dto.getDate() != null) order.setDate(dto.getDate());
-    if (dto.getStatus() != null) order.setStatus(dto.getStatus());
-    if (dto.getPaymentMethod() != null) order.setPaymentMethod(dto.getPaymentMethod());
-    if (dto.getDeliveryCity() != null) order.setDeliveryCity(dto.getDeliveryCity());
-    if (dto.getItems() != null) replaceItems(order, dto.getItems());
+    if (dto.getDate() != null) {
+      order.setDate(dto.getDate());
+    }
+    if (dto.getStatus() != null) {
+      order.setStatus(dto.getStatus());
+    }
+    if (dto.getPaymentMethod() != null) {
+      order.setPaymentMethod(dto.getPaymentMethod());
+    }
+    if (dto.getDeliveryCity() != null) {
+      order.setDeliveryCity(dto.getDeliveryCity());
+    }
+    if (dto.getItems() != null) {
+      replaceItems(order, dto.getItems());
+    }
     recalculateTotal(order);
     return orderMapper.toFullDto(orderRepository.save(order));
   }
@@ -86,7 +98,8 @@ public class OrderService {
   }
 
   private Order buildOrder(OrderCreateDto dto) {
-    Client client = clientRepository.findById(dto.getClientId()).orElseThrow(ResourceNotFoundException::new);
+    Client client = clientRepository.findById(dto.getClientId())
+        .orElseThrow(ResourceNotFoundException::new);
     Order order = Order.builder()
         .client(client)
         .date(dto.getDate() != null ? dto.getDate() : LocalDateTime.now())
@@ -103,7 +116,8 @@ public class OrderService {
   private void replaceItems(Order order, List<OrderItemRequestDto> requests) {
     order.getItems().clear();
     for (OrderItemRequestDto request : requests) {
-      Book book = bookRepository.findById(request.getBookId()).orElseThrow(ResourceNotFoundException::new);
+      Book book = bookRepository.findById(request.getBookId())
+          .orElseThrow(ResourceNotFoundException::new);
       order.getItems().add(OrderItem.builder()
           .order(order)
           .book(book)

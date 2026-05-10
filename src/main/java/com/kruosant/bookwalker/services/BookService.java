@@ -63,29 +63,63 @@ public class BookService {
   }
 
   private void patchCatalogFields(Book book, BookPatchDto dto) {
-    if (dto.getTitle() != null) book.setTitle(dto.getTitle());
-    if (dto.getAuthors() != null) book.setAuthors(fetchAuthors(dto.getAuthors()));
-    if (dto.getGenreId() != null) book.setGenre(fetchGenre(dto.getGenreId()));
-    if (dto.getPrice() != null) book.setPrice(dto.getPrice());
-    if (dto.getDiscountPrice() != null) book.setDiscountPrice(dto.getDiscountPrice());
-    if (dto.getFormat() != null) book.setFormat(dto.getFormat());
-    if (dto.getPages() != null) book.setPages(dto.getPages());
-    if (dto.getYear() != null) book.setYear(dto.getYear());
-    if (dto.getPublishDate() != null) book.setPublishDate(dto.getPublishDate());
-    if (dto.getPublisherIds() != null) book.setPublishers(fetchPublishers(dto.getPublisherIds()));
+    if (dto.getTitle() != null) {
+      book.setTitle(dto.getTitle());
+    }
+    if (dto.getAuthors() != null) {
+      book.setAuthors(fetchAuthors(dto.getAuthors()));
+    }
+    if (dto.getGenreId() != null) {
+      book.setGenre(fetchGenre(dto.getGenreId()));
+    }
+    if (dto.getPrice() != null) {
+      book.setPrice(dto.getPrice());
+    }
+    if (dto.getDiscountPrice() != null) {
+      book.setDiscountPrice(dto.getDiscountPrice());
+    }
+    if (dto.getFormat() != null) {
+      book.setFormat(dto.getFormat());
+    }
+    if (dto.getPages() != null) {
+      book.setPages(dto.getPages());
+    }
+    if (dto.getYear() != null) {
+      book.setYear(dto.getYear());
+    }
+    if (dto.getPublishDate() != null) {
+      book.setPublishDate(dto.getPublishDate());
+    }
+    if (dto.getPublisherIds() != null) {
+      book.setPublishers(fetchPublishers(dto.getPublisherIds()));
+    }
   }
 
   private void patchDescriptionFields(Book book, BookPatchDto dto) {
-    if (dto.getBlurb() != null) book.setBlurb(dto.getBlurb());
-    if (dto.getDescription() != null) book.setDescription(dto.getDescription());
-    if (dto.getLongDescription() != null) book.setLongDescription(dto.getLongDescription());
-    if (dto.getTagIds() != null) book.setTags(fetchTags(dto.getTagIds()));
+    if (dto.getBlurb() != null) {
+      book.setBlurb(dto.getBlurb());
+    }
+    if (dto.getDescription() != null) {
+      book.setDescription(dto.getDescription());
+    }
+    if (dto.getLongDescription() != null) {
+      book.setLongDescription(dto.getLongDescription());
+    }
+    if (dto.getTagIds() != null) {
+      book.setTags(fetchTags(dto.getTagIds()));
+    }
   }
 
   private void patchVisibilityFlags(Book book, BookPatchDto dto) {
-    if (dto.getFeatured() != null) book.setFeatured(dto.getFeatured());
-    if (dto.getPopular() != null) book.setPopular(dto.getPopular());
-    if (dto.getNewArrival() != null) book.setNewArrival(dto.getNewArrival());
+    if (dto.getFeatured() != null) {
+      book.setFeatured(dto.getFeatured());
+    }
+    if (dto.getPopular() != null) {
+      book.setPopular(dto.getPopular());
+    }
+    if (dto.getNewArrival() != null) {
+      book.setNewArrival(dto.getNewArrival());
+    }
   }
 
   @Transactional

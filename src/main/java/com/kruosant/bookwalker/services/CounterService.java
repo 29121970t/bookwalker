@@ -1,6 +1,6 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.dtos.counter.RaceDemoDTO;
+import com.kruosant.bookwalker.dtos.counter.RaceDemoDto;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ExecutorService;
@@ -22,7 +22,7 @@ public class CounterService {
     counter++;
   }
 
-  public RaceDemoDTO runDemo() {
+  public RaceDemoDto runDemo() {
 
     Runnable syncTask = () -> {
       for (long j = 0L; j < THREAD_INCREMENT; j++) {
@@ -44,7 +44,11 @@ public class CounterService {
         pool.submit(syncTask);
       }
     }
-    return new RaceDemoDTO(POOL_SIZE.longValue() * THREAD_INCREMENT, counter, atomicCounter.longValue());
+    return new RaceDemoDto(
+        POOL_SIZE.longValue() * THREAD_INCREMENT,
+        counter,
+        atomicCounter.longValue()
+    );
   }
 
 }

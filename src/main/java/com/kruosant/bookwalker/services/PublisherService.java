@@ -44,10 +44,18 @@ public class PublisherService {
   @Transactional
   public PublisherFullDto patch(Long id, PublisherPatchDto dto) {
     Publisher publisher = getEntity(id);
-    if (dto.getName() != null) publisher.setName(dto.getName());
-    if (dto.getDescription() != null) publisher.setDescription(dto.getDescription());
-    if (dto.getCountry() != null) publisher.setCountry(dto.getCountry());
-    if (dto.getWebsite() != null) publisher.setWebsite(dto.getWebsite());
+    if (dto.getName() != null) {
+      publisher.setName(dto.getName());
+    }
+    if (dto.getDescription() != null) {
+      publisher.setDescription(dto.getDescription());
+    }
+    if (dto.getCountry() != null) {
+      publisher.setCountry(dto.getCountry());
+    }
+    if (dto.getWebsite() != null) {
+      publisher.setWebsite(dto.getWebsite());
+    }
     return publisherMapper.toFullDto(publisherRepository.save(publisher));
   }
 

@@ -1,6 +1,6 @@
 package com.kruosant.bookwalker.services;
 
-import com.kruosant.bookwalker.dtos.counter.RaceDemoDTO;
+import com.kruosant.bookwalker.dtos.counter.RaceDemoDto;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -43,7 +43,7 @@ class CounterServiceTest {
   void runDemoShouldReturnExpectedSafeResult() {
     CounterService service = new CounterService();
 
-    RaceDemoDTO result = service.runDemo();
+    RaceDemoDto result = service.runDemo();
 
     assertEquals(24_000L, result.expected());
     assertEquals(result.expected(), result.safeResult());
@@ -55,8 +55,8 @@ class CounterServiceTest {
   void runDemoShouldResetCountersBetweenRuns() {
     CounterService service = new CounterService();
 
-    RaceDemoDTO firstRun = service.runDemo();
-    RaceDemoDTO secondRun = service.runDemo();
+    RaceDemoDto firstRun = service.runDemo();
+    RaceDemoDto secondRun = service.runDemo();
 
     assertEquals(24_000L, firstRun.expected());
     assertEquals(24_000L, secondRun.expected());

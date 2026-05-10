@@ -43,7 +43,8 @@ public class JwtService {
 
   public boolean isValid(String token, ClientPrincipal principal) {
     Claims claims = extractClaims(token);
-    return principal.getUsername().equals(claims.getSubject()) && claims.getExpiration().after(new Date());
+    return principal.getUsername().equals(claims.getSubject())
+        && claims.getExpiration().after(new Date());
   }
 
   private Claims extractClaims(String token) {

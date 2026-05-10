@@ -44,10 +44,18 @@ public class AuthorService {
   @Transactional
   public AuthorFullDto patch(Long id, AuthorPatchDto dto) {
     Author author = getEntity(id);
-    if (dto.getName() != null) author.setName(dto.getName());
-    if (dto.getBio() != null) author.setBio(dto.getBio());
-    if (dto.getCountry() != null) author.setCountry(dto.getCountry());
-    if (dto.getWebsite() != null) author.setWebsite(dto.getWebsite());
+    if (dto.getName() != null) {
+      author.setName(dto.getName());
+    }
+    if (dto.getBio() != null) {
+      author.setBio(dto.getBio());
+    }
+    if (dto.getCountry() != null) {
+      author.setCountry(dto.getCountry());
+    }
+    if (dto.getWebsite() != null) {
+      author.setWebsite(dto.getWebsite());
+    }
     return authorMapper.toFullDto(authorRepository.save(author));
   }
 
