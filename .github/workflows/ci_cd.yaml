@@ -42,8 +42,8 @@ jobs:
           cache: maven
       - name: Build
         run: ./mvnw clean package -DskipTests
-      - name: Test
-        run: ./mvnw clean verify
+      - name: Jacoco Report
+        run: ./mvnw jacoco:report 
       - name: Sonar Scan
         run: >
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
@@ -58,6 +58,28 @@ jobs:
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.coverage.exclusions=src/main/java/com/kruosant/bookwalker/aspect/**,src/main/java/com/kruosant/bookwalker/cashe/**,src/main/java/com/kruosant/bookwalker/config/**,src/main/java/com/kruosant/bookwalker/controllers/**,src/main/java/com/kruosant/bookwalker/domains/**,src/main/java/com/kruosant/bookwalker/dtos/**,src/main/java/com/kruosant/bookwalker/exceptions/**,src/main/java/com/kruosant/bookwalker/mappers/**,src/main/java/com/kruosant/bookwalker/repositories/**,src/main/java/com/kruosant/bookwalker/security/**,src/main/java/com/kruosant/bookwalker/BookwalkerApplication.java
 
+      - name: Run Tests
+        run: ./mvnw clean test
+
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    needs: [build_frontend, build_backend]
+    steps:
+      - name: Deploy Frontend
+        uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.RENDER_FRONTEND_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true
+      - name: Deploy Backend
+        uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.RENDER_BACKEND_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          wait_deploy: true
+      
+      
 
   
       
