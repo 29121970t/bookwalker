@@ -15,7 +15,7 @@ projects:
         sync: true
         value: "80"
       - key: DB_HOSTNAME
-        sync: true
+        sync: false
       - key: DB_PORT
         sync: false
       - key: DB_PASSWORD
@@ -26,7 +26,6 @@ projects:
         sync: false
       - key: ADMIN_SEED_ENABLED
         sync: false
-        value: "false"
       - key: ADMIN_PASSWORD
         sync: false
       - key: ADMIN_NAME
@@ -59,7 +58,7 @@ projects:
 
       autoDeployTrigger: "off"
 
-      
+
 databases:
   - name: bookwalker-db
     databaseName: bookwalker
