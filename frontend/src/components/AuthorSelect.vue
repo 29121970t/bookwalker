@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-vue-next"
-import { computed, ref } from "vue"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { CheckIcon, ChevronsUpDownIcon } from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,64 +11,66 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
-type SelectValue = string | number | null
-type ModelValue = SelectValue | SelectValue[]
+type SelectValue = string | number | null;
+type ModelValue = SelectValue | SelectValue[];
 type SelectOption = {
-  id?: number
-  value?: string | number
-  label: string
-}
+  id?: number;
+  value?: string | number;
+  label: string;
+};
 
 const props = defineProps<{
-  authors: SelectOption[]
-  id?: string
-  invalid?: boolean
-  multiple?: boolean
-}>()
-const modelValue = defineModel<ModelValue>({ default: "" })
+  authors: SelectOption[];
+  id?: string;
+  invalid?: boolean;
+  multiple?: boolean;
+}>();
+const modelValue = defineModel<ModelValue>({ default: "" });
 
-const open = ref(false)
+const open = ref(false);
 const selectedAuthors = computed(() =>
   props.authors.filter((author) => isSelected(optionValue(author))),
-)
+);
 
 function optionValue(author: SelectOption) {
-  return author.value ?? author.id ?? ""
+  return author.value ?? author.id ?? "";
 }
 
 function emptyValue() {
-  if (props.multiple) return []
-  return typeof modelValue.value === "number" || modelValue.value === null ? null : ""
+  if (props.multiple) return [];
+  return typeof modelValue.value === "number" || modelValue.value === null
+    ? null
+    : "";
 }
 
 function values() {
-  return Array.isArray(modelValue.value) ? modelValue.value : []
+  return Array.isArray(modelValue.value) ? modelValue.value : [];
 }
 
 function isSelected(selectedValue: SelectValue) {
   if (props.multiple) {
-    return values().some((value) => Object.is(value, selectedValue))
+    return values().some((value) => Object.is(value, selectedValue));
   }
-  return Object.is(selectedValue, modelValue.value)
+  return Object.is(selectedValue, modelValue.value);
 }
 
 function selectAuthor(selectedValue: SelectValue) {
   if (props.multiple) {
     modelValue.value = isSelected(selectedValue)
       ? values().filter((value) => !Object.is(value, selectedValue))
-      : [...values(), selectedValue]
-    return
+      : [...values(), selectedValue];
+    return;
   }
 
-  modelValue.value = isSelected(selectedValue) ? emptyValue() : selectedValue
-  open.value = false
+  modelValue.value = isSelected(selectedValue) ? emptyValue() : selectedValue;
+  open.value = false;
 }
 </script>
 
@@ -109,7 +111,7 @@ function selectAuthor(selectedValue: SelectValue) {
       </Button>
     </PopoverTrigger>
     <PopoverContent class="p-0 w-(--reka-popover-trigger-width)">
-      <Command class=" bg-background">
+      <Command class="bg-background">
         <CommandInput :id="id" class="h-9" placeholder="Search author..." />
         <CommandList>
           <CommandEmpty>No author found.</CommandEmpty>
@@ -118,17 +120,23 @@ function selectAuthor(selectedValue: SelectValue) {
               v-for="author in authors"
               :key="optionValue(author)"
               :value="author.label"
-              @select="() => {
-                selectAuthor(optionValue(author))
-              }"
+              @select="
+                () => {
+                  selectAuthor(optionValue(author));
+                }
+              "
               class="hover:bg-accent"
             >
               {{ author.label }}
               <CheckIcon
-                :class="cn(
-                  'ml-auto',
-                  isSelected(optionValue(author)) ? 'opacity-100' : 'opacity-0',
-                )"
+                :class="
+                  cn(
+                    'ml-auto',
+                    isSelected(optionValue(author))
+                      ? 'opacity-100'
+                      : 'opacity-0',
+                  )
+                "
               />
             </CommandItem>
           </CommandGroup>

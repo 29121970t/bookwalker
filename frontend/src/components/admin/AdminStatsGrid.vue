@@ -5,16 +5,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
 defineProps<{
   stats: Array<{
-    title: string
-    value: string
-    note: string
-    icon: unknown
-  }>
-}>()
+    title: string;
+    value: string;
+    note: string;
+    icon: unknown;
+  }>;
+}>();
 </script>
 
 <template>
@@ -29,7 +29,9 @@ defineProps<{
           <CardDescription>{{ stat.title }}</CardDescription>
           <CardTitle class="mt-2 text-3xl">{{ stat.value }}</CardTitle>
         </div>
-        <div class="grid size-10 place-items-center rounded-2xl bg-slate-950 text-white">
+        <div
+          class="grid size-10 place-items-center rounded-2xl bg-slate-950 text-white"
+        >
           <component :is="stat.icon" class="size-4" />
         </div>
       </CardHeader>

@@ -26,7 +26,9 @@ const panel = useAdminPanel();
     <Card
       class="rounded-[2rem] border-white/70 bg-white/90 shadow-lg shadow-slate-200/60"
     >
-      <CardHeader class="gap-4 grid grid-rows-2 grid-cols-[1fr] md:items-center md:justify-between w-full">
+      <CardHeader
+        class="gap-4 grid grid-rows-2 grid-cols-[1fr] md:items-center md:justify-between w-full"
+      >
         <div class="w-full">
           <CardTitle>{{ panel.sectionMeta[section].title }} table</CardTitle>
           <CardDescription>
@@ -45,7 +47,11 @@ const panel = useAdminPanel();
               <Search class="size-4" />
             </InputGroupAddon>
           </InputGroup>
-          <Button class="rounded-full" :disabled="!panel.canCreateSection[section]" @click="panel.openCreateDialog(section)">
+          <Button
+            class="rounded-full"
+            :disabled="!panel.canCreateSection[section]"
+            @click="panel.openCreateDialog(section)"
+          >
             <Plus class="size-4" />
             Add {{ panel.dialogTitles[section] }}
           </Button>

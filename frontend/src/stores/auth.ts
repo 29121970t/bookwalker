@@ -1,53 +1,53 @@
-import { computed, ref } from "vue"
-import { apiRequest, getStoredToken, setStoredToken } from "@/lib/api"
+import { computed, ref } from "vue";
+import { apiRequest, getStoredToken, setStoredToken } from "@/lib/api";
 
 interface AuthResponse {
-  token: string
-  name: string
-  email: string
-  role: string
+  token: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
 interface MeResponse {
-  id: number
-  name: string
-  email: string
-  role: string
+  id: number;
+  name: string;
+  email: string;
+  role: string;
 }
 
-const token = ref<string | null>(getStoredToken())
-const user = ref<MeResponse | null>(null)
-let restorePromise: Promise<void> | null = null
+const token = ref<string | null>(getStoredToken());
+const user = ref<MeResponse | null>(null);
+let restorePromise: Promise<void> | null = null;
 
 async function loadMe() {
   if (!token.value) {
-    user.value = null
-    return
+    user.value = null;
+    return;
   }
-  user.value = await apiRequest<MeResponse>("/auth/me")
+  user.value = await apiRequest<MeResponse>("/auth/me");
 }
 
 async function restoreSession() {
   if (restorePromise) {
-    return restorePromise
+    return restorePromise;
   }
 
   restorePromise = (async () => {
     if (!token.value) {
-      user.value = null
-      return
+      user.value = null;
+      return;
     }
     try {
-      await loadMe()
+      await loadMe();
     } catch {
-      logout()
+      logout();
     }
-  })()
+  })();
 
   try {
-    await restorePromise
+    await restorePromise;
   } finally {
-    restorePromise = null
+    restorePromise = null;
   }
 }
 
@@ -56,10 +56,10 @@ async function login(email: string, password: string) {
     method: "POST",
     body: JSON.stringify({ email, password }),
     auth: false,
-  })
-  token.value = response.token
-  setStoredToken(response.token)
-  await loadMe()
+  });
+  token.value = response.token;
+  setStoredToken(response.token);
+  await loadMe();
 }
 
 async function register(name: string, email: string, password: string) {
@@ -67,16 +67,16 @@ async function register(name: string, email: string, password: string) {
     method: "POST",
     body: JSON.stringify({ name, email, password }),
     auth: false,
-  })
-  token.value = response.token
-  setStoredToken(response.token)
-  await loadMe()
+  });
+  token.value = response.token;
+  setStoredToken(response.token);
+  await loadMe();
 }
 
 function logout() {
-  token.value = null
-  user.value = null
-  setStoredToken(null)
+  token.value = null;
+  user.value = null;
+  setStoredToken(null);
 }
 
 export function useAuthStore() {
@@ -90,5 +90,5 @@ export function useAuthStore() {
     login,
     register,
     logout,
-  }
+  };
 }

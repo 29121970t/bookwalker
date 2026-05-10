@@ -23,8 +23,7 @@ const relatedBooks = computed(() => {
     return [];
   }
 
-  return books
-    .value
+  return books.value
     .filter(
       (item) => item.id !== currentBook.id && item.genre === currentBook.genre,
     )

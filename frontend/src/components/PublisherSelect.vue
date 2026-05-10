@@ -17,23 +17,25 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-type SelectValue = string | number | null
+type SelectValue = string | number | null;
 type SelectOption = {
-  id?: number
-  value?: string | number
-  label: string
-}
+  id?: number;
+  value?: string | number;
+  label: string;
+};
 
 const props = defineProps<{
   publishers: SelectOption[];
   id?: string;
   invalid?: boolean;
 }>();
-const modelValue = defineModel<SelectValue>({ default: "" })
+const modelValue = defineModel<SelectValue>({ default: "" });
 
 const open = ref(false);
 const selectedPublisher = computed(() =>
-  props.publishers.find((publisher) => Object.is(optionValue(publisher), modelValue.value)),
+  props.publishers.find((publisher) =>
+    Object.is(optionValue(publisher), modelValue.value),
+  ),
 );
 
 function optionValue(publisher: SelectOption) {
@@ -41,11 +43,15 @@ function optionValue(publisher: SelectOption) {
 }
 
 function emptyValue() {
-  return typeof modelValue.value === "number" || modelValue.value === null ? null : "";
+  return typeof modelValue.value === "number" || modelValue.value === null
+    ? null
+    : "";
 }
 
 function selectPublisher(selectedValue: SelectValue) {
-  modelValue.value = Object.is(selectedValue, modelValue.value) ? emptyValue() : selectedValue;
+  modelValue.value = Object.is(selectedValue, modelValue.value)
+    ? emptyValue()
+    : selectedValue;
   open.value = false;
 }
 </script>
@@ -90,7 +96,9 @@ function selectPublisher(selectedValue: SelectValue) {
                 :class="
                   cn(
                     'ml-auto',
-                    Object.is(modelValue, optionValue(publisher)) ? 'opacity-100' : 'opacity-0',
+                    Object.is(modelValue, optionValue(publisher))
+                      ? 'opacity-100'
+                      : 'opacity-0',
                   )
                 "
               />

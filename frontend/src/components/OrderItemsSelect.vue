@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { CheckIcon, ChevronDown, Minus, Plus } from "lucide-vue-next"
-import { computed, ref } from "vue"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { CheckIcon, ChevronDown, Minus, Plus } from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,51 +11,63 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { ScrollArea } from "@/components/ui/scroll-area"
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const props = defineProps<{
-  books: Array<{ id: number, label: string, subtitle?: string }>
-}>()
+  books: Array<{ id: number; label: string; subtitle?: string }>;
+}>();
 
-const selectedItems = defineModel<Array<{ bookId: number, quantity: number }>>({ default: [] })
-const open = ref(false)
+const selectedItems = defineModel<Array<{ bookId: number; quantity: number }>>({
+  default: [],
+});
+const open = ref(false);
 
-const selectedMap = computed(() => new Map(selectedItems.value.map((item) => [item.bookId, item.quantity])))
+const selectedMap = computed(
+  () =>
+    new Map(selectedItems.value.map((item) => [item.bookId, item.quantity])),
+);
 
 const selectedBooks = computed(() =>
   props.books.filter((book) => selectedMap.value.has(book.id)),
-)
+);
 
 function setQuantity(bookId: number, quantity: number) {
-  const safeQuantity = Math.max(0, Math.floor(quantity))
+  const safeQuantity = Math.max(0, Math.floor(quantity));
   if (safeQuantity === 0) {
-    selectedItems.value = selectedItems.value.filter((item) => item.bookId !== bookId)
-    return
+    selectedItems.value = selectedItems.value.filter(
+      (item) => item.bookId !== bookId,
+    );
+    return;
   }
 
-  const existing = selectedItems.value.find((item) => item.bookId === bookId)
+  const existing = selectedItems.value.find((item) => item.bookId === bookId);
   if (existing) {
-    selectedItems.value = selectedItems.value.map((item) => item.bookId === bookId ? { ...item, quantity: safeQuantity } : item)
-    return
+    selectedItems.value = selectedItems.value.map((item) =>
+      item.bookId === bookId ? { ...item, quantity: safeQuantity } : item,
+    );
+    return;
   }
 
-  selectedItems.value = [...selectedItems.value, { bookId, quantity: safeQuantity }]
+  selectedItems.value = [
+    ...selectedItems.value,
+    { bookId, quantity: safeQuantity },
+  ];
 }
 
 function toggleBook(bookId: number) {
-  const existing = selectedMap.value.get(bookId)
-  setQuantity(bookId, existing ? 0 : 1)
+  const existing = selectedMap.value.get(bookId);
+  setQuantity(bookId, existing ? 0 : 1);
 }
 
 function clearAll() {
-  selectedItems.value = []
+  selectedItems.value = [];
 }
 </script>
 
@@ -104,7 +116,10 @@ function clearAll() {
               >
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-medium">{{ book.label }}</p>
-                  <p v-if="book.subtitle" class="truncate text-xs text-muted-foreground">
+                  <p
+                    v-if="book.subtitle"
+                    class="truncate text-xs text-muted-foreground"
+                  >
                     {{ book.subtitle }}
                   </p>
                 </div>
@@ -114,7 +129,9 @@ function clearAll() {
                     variant="outline"
                     size="icon"
                     class="size-7 rounded-full"
-                    @click.stop="setQuantity(book.id, (selectedMap.get(book.id) ?? 0) - 1)"
+                    @click.stop="
+                      setQuantity(book.id, (selectedMap.get(book.id) ?? 0) - 1)
+                    "
                   >
                     <Minus class="size-3" />
                   </Button>
@@ -131,12 +148,19 @@ function clearAll() {
                     variant="outline"
                     size="icon"
                     class="size-7 rounded-full"
-                    @click.stop="setQuantity(book.id, (selectedMap.get(book.id) ?? 0) + 1)"
+                    @click.stop="
+                      setQuantity(book.id, (selectedMap.get(book.id) ?? 0) + 1)
+                    "
                   >
                     <Plus class="size-3" />
                   </Button>
                   <CheckIcon
-                    :class="cn('size-4', selectedMap.has(book.id) ? 'opacity-100' : 'opacity-0')"
+                    :class="
+                      cn(
+                        'size-4',
+                        selectedMap.has(book.id) ? 'opacity-100' : 'opacity-0',
+                      )
+                    "
                   />
                 </div>
               </CommandItem>

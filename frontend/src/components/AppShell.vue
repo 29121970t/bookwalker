@@ -107,10 +107,15 @@ async function submitSearch() {
           <RouterLink v-if="auth.isAdmin.value" :to="{ name: 'admin-books' }">
             <Button variant="outline">Admin</Button>
           </RouterLink>
-          <RouterLink v-if="!auth.isAuthenticated.value" :to="{ name: 'login' }">
+          <RouterLink
+            v-if="!auth.isAuthenticated.value"
+            :to="{ name: 'login' }"
+          >
             <Button>Login</Button>
           </RouterLink>
-          <Button v-else variant="outline" @click="auth.logout()">Logout</Button>
+          <Button v-else variant="outline" @click="auth.logout()"
+            >Logout</Button
+          >
         </div>
 
         <div class="ml-auto lg:hidden">
@@ -127,7 +132,10 @@ async function submitSearch() {
               <div class="p-6">
                 <form class="pb-6 w-5/6" @submit.prevent="submitSearch">
                   <InputGroup>
-                    <InputGroupInput v-model="searchQuery" placeholder="Search..." />
+                    <InputGroupInput
+                      v-model="searchQuery"
+                      placeholder="Search..."
+                    />
                     <InputGroupAddon>
                       <button type="submit" class="flex items-center">
                         <Search />

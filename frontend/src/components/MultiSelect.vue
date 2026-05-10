@@ -20,11 +20,7 @@ const modelValue = defineModel<AcceptableValue[]>();
 </script>
 
 <template>
-  <Select
-    v-bind="forwarded"
-    multiple
-    v-model:model-value="modelValue"
-  >
+  <Select v-bind="forwarded" multiple v-model:model-value="modelValue">
     <SelectTrigger class="w-full">
       <SelectValue :placeholder="placeholder" />
     </SelectTrigger>

@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue"
-import { Minus, Plus, Trash2 } from "lucide-vue-next"
-import { RouterLink, useRouter } from "vue-router"
-import { toast } from "vue-sonner"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { computed } from "vue";
+import { Minus, Plus, Trash2 } from "lucide-vue-next";
+import { RouterLink, useRouter } from "vue-router";
+import { toast } from "vue-sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import BookCover from "@/components/BookCover.vue"
-import SectionHeading from "@/components/SectionHeading.vue"
-import { useBookstore } from "@/stores/bookstore"
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import BookCover from "@/components/BookCover.vue";
+import SectionHeading from "@/components/SectionHeading.vue";
+import { useBookstore } from "@/stores/bookstore";
 
 const {
   cartItems,
@@ -27,28 +27,27 @@ const {
   decrementQuantity,
   removeFromCart,
   checkout,
-} = useBookstore()
+} = useBookstore();
 
-const hasItems = computed(() => cartItems.value.length > 0)
-const router = useRouter()
+const hasItems = computed(() => cartItems.value.length > 0);
+const router = useRouter();
 
 async function handleCheckout() {
   try {
-    await checkout()
-    toast.success("Order created successfully")
-    await router.push({ name: "account" })
+    await checkout();
+    toast.success("Order created successfully");
+    await router.push({ name: "account" });
   } catch (error) {
-    toast.error(error instanceof Error ? error.message : "Failed to create order")
+    toast.error(
+      error instanceof Error ? error.message : "Failed to create order",
+    );
   }
 }
 </script>
 
 <template>
   <div class="space-y-8 pb-10">
-    <SectionHeading
-      eyebrow="Cart"
-      title="Ready for purchase"
-    />
+    <SectionHeading eyebrow="Cart" title="Ready for purchase" />
 
     <div v-if="hasItems" class="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <div class="space-y-4">
@@ -66,7 +65,10 @@ async function handleCheckout() {
                   <Badge variant="outline">{{ item.book.format }}</Badge>
                 </div>
                 <div>
-                  <RouterLink :to="{ name: 'book', params: { id: item.book.id } }" class="text-2xl font-semibold tracking-tight hover:text-primary">
+                  <RouterLink
+                    :to="{ name: 'book', params: { id: item.book.id } }"
+                    class="text-2xl font-semibold tracking-tight hover:text-primary"
+                  >
                     {{ item.book.title }}
                   </RouterLink>
                   <p class="text-sm text-slate-600">{{ item.book.author }}</p>
@@ -76,23 +78,46 @@ async function handleCheckout() {
                 </p>
               </div>
 
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div class="flex items-center gap-3">
-                  <Button variant="outline" size="icon" class="rounded-full" @click="decrementQuantity(item.book.id)">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="rounded-full"
+                    @click="decrementQuantity(item.book.id)"
+                  >
                     <Minus class="size-4" />
                   </Button>
-                  <span class="min-w-8 text-center text-lg font-semibold">{{ item.quantity }}</span>
-                  <Button variant="outline" size="icon" class="rounded-full" @click="incrementQuantity(item.book.id)">
+                  <span class="min-w-8 text-center text-lg font-semibold">{{
+                    item.quantity
+                  }}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="rounded-full"
+                    @click="incrementQuantity(item.book.id)"
+                  >
                     <Plus class="size-4" />
                   </Button>
                 </div>
 
                 <div class="flex items-center gap-4">
                   <div class="text-right">
-                    <p class="text-xl font-semibold">${{ item.lineTotal.toFixed(2) }}</p>
-                    <p class="text-sm text-slate-500">${{ item.book.price.toFixed(2) }} each</p>
+                    <p class="text-xl font-semibold">
+                      ${{ item.lineTotal.toFixed(2) }}
+                    </p>
+                    <p class="text-sm text-slate-500">
+                      ${{ item.book.price.toFixed(2) }} each
+                    </p>
                   </div>
-                  <Button variant="ghost" size="icon" class="rounded-full text-slate-500 hover:text-red-600" @click="removeFromCart(item.book.id)">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="rounded-full text-slate-500 hover:text-red-600"
+                    @click="removeFromCart(item.book.id)"
+                  >
                     <Trash2 class="size-4" />
                   </Button>
                 </div>
@@ -102,7 +127,9 @@ async function handleCheckout() {
         </Card>
       </div>
 
-      <Card class="sticky top-1/5 h-fit rounded-[2rem] border-white/70 bg-white/90 shadow-lg shadow-slate-200/60">
+      <Card
+        class="sticky top-1/5 h-fit rounded-[2rem] border-white/70 bg-white/90 shadow-lg shadow-slate-200/60"
+      >
         <CardHeader>
           <CardTitle class="text-2xl">Summary</CardTitle>
         </CardHeader>
@@ -113,7 +140,9 @@ async function handleCheckout() {
           </div>
           <div class="flex items-center justify-between text-sm text-slate-600">
             <span>Delivery</span>
-            <span>{{ deliveryFee === 0 ? "Free" : `$${deliveryFee.toFixed(2)}` }}</span>
+            <span>{{
+              deliveryFee === 0 ? "Free" : `$${deliveryFee.toFixed(2)}`
+            }}</span>
           </div>
           <div class="flex items-center justify-between text-sm text-slate-600">
             <span>Member discount</span>
@@ -126,18 +155,28 @@ async function handleCheckout() {
           </div>
         </CardContent>
         <CardFooter class="flex flex-col gap-3">
-          <Button class="w-full rounded-full" @click="handleCheckout">Proceed to checkout</Button>
+          <Button class="w-full rounded-full" @click="handleCheckout"
+            >Proceed to checkout</Button
+          >
           <RouterLink :to="{ name: 'browse' }" class="w-full">
-            <Button variant="outline" class="w-full rounded-full">Continue browsing</Button>
+            <Button variant="outline" class="w-full rounded-full"
+              >Continue browsing</Button
+            >
           </RouterLink>
         </CardFooter>
       </Card>
     </div>
 
-    <Card v-else class="rounded-[2rem] border-dashed border-slate-300 bg-white/75">
+    <Card
+      v-else
+      class="rounded-[2rem] border-dashed border-slate-300 bg-white/75"
+    >
       <CardContent class="space-y-4 p-12 text-center">
         <p class="text-3xl font-semibold text-slate-950">Your cart is empty.</p>
-        <p class="mx-auto max-w-lg text-slate-600">Start with the browse page or head back to the landing shelf to pick a few popular titles.</p>
+        <p class="mx-auto max-w-lg text-slate-600">
+          Start with the browse page or head back to the landing shelf to pick a
+          few popular titles.
+        </p>
         <RouterLink :to="{ name: 'browse' }">
           <Button class="rounded-full">Browse books</Button>
         </RouterLink>

@@ -1,58 +1,53 @@
 <script setup lang="ts">
-import {
-  InputGroup,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import Separator from "./ui/separator/Separator.vue";
 
-const { id } = defineProps<{ id? :string }>()
-const minModel = defineModel<number | null>("min", { default: null })
-const maxModel = defineModel<number | null>("max", { default: null })
+const { id } = defineProps<{ id?: string }>();
+const minModel = defineModel<number | null>("min", { default: null });
+const maxModel = defineModel<number | null>("max", { default: null });
 
 function formatValue(value: number | null) {
-  return value == null ? "" : String(value)
+  return value == null ? "" : String(value);
 }
 
 function sanitizeNumericInput(value: string) {
   const normalized = value
     .replace(",", ".")
     .replace(/[^0-9.]/g, "")
-    .replace(/^(\d*\.\d*).*$/, "$1")
+    .replace(/^(\d*\.\d*).*$/, "$1");
 
-  return normalized
+  return normalized;
 }
 
 function parseValue(value: string) {
-  const sanitized = sanitizeNumericInput(value)
+  const sanitized = sanitizeNumericInput(value);
 
   if (!sanitized) {
-    return null
+    return null;
   }
 
-  const parsed = Number(sanitized)
-  return Number.isFinite(parsed) ? parsed : null
+  const parsed = Number(sanitized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function handleInput(flag : boolean, event: Event) {
-  const input = event.target as HTMLInputElement
-  const sanitized = sanitizeNumericInput(input.value)
-  input.value = input.value.replace(/[^0-9]/g, '')
+function handleInput(flag: boolean, event: Event) {
+  const input = event.target as HTMLInputElement;
+  const sanitized = sanitizeNumericInput(input.value);
+  input.value = input.value.replace(/[^0-9]/g, "");
   // if (input.value !== sanitized) {
   //   input.value = sanitized
   // }
 
-  if(!flag){
-    minModel.value = parseValue(sanitized)
+  if (!flag) {
+    minModel.value = parseValue(sanitized);
+  } else {
+    maxModel.value = parseValue(sanitized);
   }
-  else{
-    maxModel.value = parseValue(sanitized)
-  }
-  
 }
 
 function blockInvalidKeys(event: KeyboardEvent) {
   if (["e", "E", "+", "-"].includes(event.key)) {
-    event.preventDefault()
+    event.preventDefault();
   }
 }
 </script>

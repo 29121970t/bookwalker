@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue"
-import type { AdminSection } from "@/composables/useAdminPanel"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+import { computed } from "vue";
+import type { AdminSection } from "@/composables/useAdminPanel";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 import {
   Pagination,
   PaginationContent,
@@ -9,21 +9,23 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
 
 const props = defineProps<{
-  section: AdminSection
-  total: number
-}>()
+  section: AdminSection;
+  total: number;
+}>();
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 
-const currentPage = computed(() => panel.currentPage[props.section])
+const currentPage = computed(() => panel.currentPage[props.section]);
 const startItem = computed(() => {
-  if (props.total === 0) return 0
-  return (currentPage.value - 1) * panel.itemsPerPage + 1
-})
-const endItem = computed(() => Math.min(currentPage.value * panel.itemsPerPage, props.total))
+  if (props.total === 0) return 0;
+  return (currentPage.value - 1) * panel.itemsPerPage + 1;
+});
+const endItem = computed(() =>
+  Math.min(currentPage.value * panel.itemsPerPage, props.total),
+);
 </script>
 
 <template>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="tags" :total="panel.filteredTags.value.length">
+  <AdminSectionTableFrame
+    section="tags"
+    :total="panel.filteredTags.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -31,14 +34,24 @@ const panel = useAdminPanel()
       </TableHeader>
 
       <TableBody>
-        <TableRow v-for="catalogTag in panel.paginatedTags.value" :key="catalogTag.id">
+        <TableRow
+          v-for="catalogTag in panel.paginatedTags.value"
+          :key="catalogTag.id"
+        >
           <TableCell>
             <div class="flex items-center gap-3">
-              <span class="size-3 rounded-full" :style="{ backgroundColor: catalogTag.color }" />
-              <span class="font-medium text-slate-950">{{ catalogTag.name }}</span>
+              <span
+                class="size-3 rounded-full"
+                :style="{ backgroundColor: catalogTag.color }"
+              />
+              <span class="font-medium text-slate-950">{{
+                catalogTag.name
+              }}</span>
             </div>
           </TableCell>
-          <TableCell class="max-w-md text-slate-600">{{ catalogTag.description }}</TableCell>
+          <TableCell class="max-w-md text-slate-600">{{
+            catalogTag.description
+          }}</TableCell>
           <TableCell>{{ catalogTag.usageCount }}</TableCell>
           <TableCell>
             <Badge :variant="catalogTag.featured ? 'secondary' : 'outline'">
@@ -48,10 +61,20 @@ const panel = useAdminPanel()
           <TableCell class="text-right">
             <div class="flex justify-end">
               <ButtonGroup>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.openEditDialog('tags', catalogTag)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.openEditDialog('tags', catalogTag)"
+                >
                   <Pencil class="size-4" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.deleteTag(catalogTag)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.deleteTag(catalogTag)"
+                >
                   <Trash2 class="size-4" /> Delete
                 </Button>
               </ButtonGroup>

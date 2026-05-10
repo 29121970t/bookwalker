@@ -45,7 +45,7 @@
 
   --animate-slidedown: slide-down 0.5s ease-in-out;
   @keyframes slide-down {
-    0%{
+    0% {
       opacity: 0;
       transform: translateY(100%);
     }
@@ -131,8 +131,7 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-
-input[type=number] {
+input[type="number"] {
   -moz-appearance: textfield;
 }
 @layer base {
@@ -143,4 +142,3 @@ input[type=number] {
     @apply bg-background text-foreground;
   }
 }
-

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="books" :total="panel.filteredBooks.value.length">
+  <AdminSectionTableFrame
+    section="books"
+    :total="panel.filteredBooks.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -36,14 +39,20 @@ const panel = useAdminPanel()
           <TableCell>
             <div class="space-y-1">
               <p class="font-medium text-slate-950">{{ book.title }}</p>
-              <p class="text-sm text-slate-500">{{ book.author }} · {{ book.publisher }}</p>
+              <p class="text-sm text-slate-500">
+                {{ book.author }} · {{ book.publisher }}
+              </p>
             </div>
           </TableCell>
           <TableCell>{{ book.genre }}</TableCell>
           <TableCell>{{ panel.formatCurrency(book.price) }}</TableCell>
           <TableCell>
             <div class="flex flex-wrap gap-2">
-              <Badge v-for="bookTag in book.tags.slice(0, 3)" :key="bookTag" variant="outline">
+              <Badge
+                v-for="bookTag in book.tags.slice(0, 3)"
+                :key="bookTag"
+                variant="outline"
+              >
                 {{ bookTag }}
               </Badge>
               <Badge v-if="book.tags.length > 3" variant="secondary">
@@ -61,10 +70,20 @@ const panel = useAdminPanel()
           <TableCell class="text-right">
             <div class="flex justify-end">
               <ButtonGroup>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.openEditDialog('books', book)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.openEditDialog('books', book)"
+                >
                   <Pencil class="size-4" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.deleteBook(book)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.deleteBook(book)"
+                >
                   <Trash2 class="size-4" /> Delete
                 </Button>
               </ButtonGroup>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="orders" :total="panel.filteredOrders.value.length">
+  <AdminSectionTableFrame
+    section="orders"
+    :total="panel.filteredOrders.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -50,15 +53,27 @@ const panel = useAdminPanel()
           </TableCell>
           <TableCell>{{ panel.formatCurrency(order.total) }}</TableCell>
           <TableCell>
-            <Badge :variant="panel.badgeVariantForStatus(order.status)">{{ order.status }}</Badge>
+            <Badge :variant="panel.badgeVariantForStatus(order.status)">{{
+              order.status
+            }}</Badge>
           </TableCell>
           <TableCell class="text-right">
             <div class="flex justify-end">
               <ButtonGroup>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.openEditDialog('orders', order)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.openEditDialog('orders', order)"
+                >
                   <Pencil class="size-4" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.deleteOrder(order)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.deleteOrder(order)"
+                >
                   <Trash2 class="size-4" /> Delete
                 </Button>
               </ButtonGroup>

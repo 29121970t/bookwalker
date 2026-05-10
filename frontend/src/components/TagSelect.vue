@@ -33,7 +33,9 @@ const filteredTags = computed(() => {
     return props.tags;
   }
 
-  return props.tags.filter((tag) => tag.label.toLowerCase().includes(normalized));
+  return props.tags.filter((tag) =>
+    tag.label.toLowerCase().includes(normalized),
+  );
 });
 
 const selectedTags = computed(() =>
@@ -48,7 +50,6 @@ function toggleTag(tagId: number) {
 
   selectedIds.value = [...selectedIds.value, tagId];
 }
-
 </script>
 
 <template>
@@ -109,7 +110,6 @@ function toggleTag(tagId: number) {
             </CommandItem>
           </CommandGroup>
         </CommandList>
-
       </Command>
     </PopoverContent>
   </Popover>

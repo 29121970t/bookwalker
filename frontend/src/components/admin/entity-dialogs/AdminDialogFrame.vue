@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/dialog";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
@@ -26,9 +26,23 @@ const panel = useAdminPanel()
       <slot />
 
       <DialogFooter>
-        <Button variant="outline" :disabled="panel.dialogSubmitting.value" @click="panel.dialogOpen.value = false">Cancel</Button>
-        <Button :disabled="panel.dialogSubmitting.value" @click="panel.saveDialog()">
-          {{ panel.dialogSubmitting.value ? "Saving..." : panel.dialogMode.value === "create" ? "Create" : "Save changes" }}
+        <Button
+          variant="outline"
+          :disabled="panel.dialogSubmitting.value"
+          @click="panel.dialogOpen.value = false"
+          >Cancel</Button
+        >
+        <Button
+          :disabled="panel.dialogSubmitting.value"
+          @click="panel.saveDialog()"
+        >
+          {{
+            panel.dialogSubmitting.value
+              ? "Saving..."
+              : panel.dialogMode.value === "create"
+                ? "Create"
+                : "Save changes"
+          }}
         </Button>
       </DialogFooter>
     </DialogContent>

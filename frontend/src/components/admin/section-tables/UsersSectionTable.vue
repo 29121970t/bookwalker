@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="users" :total="panel.filteredUsers.value.length">
+  <AdminSectionTableFrame
+    section="users"
+    :total="panel.filteredUsers.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -41,17 +44,29 @@ const panel = useAdminPanel()
           </TableCell>
           <TableCell>{{ user.role }}</TableCell>
           <TableCell>
-            <Badge :variant="panel.badgeVariantForStatus(user.status)">{{ user.status }}</Badge>
+            <Badge :variant="panel.badgeVariantForStatus(user.status)">{{
+              user.status
+            }}</Badge>
           </TableCell>
           <TableCell>{{ user.ordersCount }}</TableCell>
           <TableCell>{{ panel.formatCurrency(user.totalSpent) }}</TableCell>
           <TableCell class="text-right">
             <div class="flex justify-end">
               <ButtonGroup>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.openEditDialog('users', user)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.openEditDialog('users', user)"
+                >
                   <Pencil class="size-4" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.deleteUser(user)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.deleteUser(user)"
+                >
                   <Trash2 class="size-4" /> Delete
                 </Button>
               </ButtonGroup>

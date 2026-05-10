@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="publishers" :total="panel.filteredPublishers.value.length">
+  <AdminSectionTableFrame
+    section="publishers"
+    :total="panel.filteredPublishers.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -31,11 +34,16 @@ const panel = useAdminPanel()
       </TableHeader>
 
       <TableBody>
-        <TableRow v-for="publisher in panel.paginatedPublishers.value" :key="publisher.id">
+        <TableRow
+          v-for="publisher in panel.paginatedPublishers.value"
+          :key="publisher.id"
+        >
           <TableCell>
             <div class="space-y-1">
               <p class="font-medium text-slate-950">{{ publisher.name }}</p>
-              <p class="text-sm text-slate-500 line-clamp-2">{{ publisher.description || "No description yet" }}</p>
+              <p class="text-sm text-slate-500 line-clamp-2">
+                {{ publisher.description || "No description yet" }}
+              </p>
             </div>
           </TableCell>
           <TableCell>{{ publisher.country || "Unknown" }}</TableCell>

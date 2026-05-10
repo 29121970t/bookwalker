@@ -30,10 +30,7 @@ function handleAdd(bookId: number) {
 <template>
   <div class="space-y-14 pb-10">
     <section class="space-y-6">
-      <SectionHeading
-        eyebrow="Featured shelf"
-        title="We recommend"
-      />
+      <SectionHeading eyebrow="Featured shelf" title="We recommend" />
 
       <Carousel
         class="rounded-[2rem]"
@@ -85,9 +82,7 @@ function handleAdd(bookId: number) {
                     </p>
                   </div>
                   <div class="flex gap-3">
-                    <RouterLink
-                      :to="{ name: 'book', params: { id: book.id } }"
-                    >
+                    <RouterLink :to="{ name: 'book', params: { id: book.id } }">
                       <Button variant="outline" class="rounded-full"
                         >Open details</Button
                       >
@@ -120,7 +115,5 @@ function handleAdd(bookId: number) {
         />
       </div>
     </section>
-
-    
   </div>
 </template>

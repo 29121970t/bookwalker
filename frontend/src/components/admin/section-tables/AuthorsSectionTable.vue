@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Pencil, Trash2 } from "lucide-vue-next"
-import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { Pencil, Trash2 } from "lucide-vue-next";
+import AdminSectionTableFrame from "@/components/admin/AdminSectionTableFrame.vue";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Table,
   TableBody,
@@ -11,14 +11,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useAdminPanel } from "@/composables/useAdminPanel"
+} from "@/components/ui/table";
+import { useAdminPanel } from "@/composables/useAdminPanel";
 
-const panel = useAdminPanel()
+const panel = useAdminPanel();
 </script>
 
 <template>
-  <AdminSectionTableFrame section="authors" :total="panel.filteredAuthors.value.length">
+  <AdminSectionTableFrame
+    section="authors"
+    :total="panel.filteredAuthors.value.length"
+  >
     <Table>
       <TableHeader>
         <TableRow>
@@ -31,11 +34,16 @@ const panel = useAdminPanel()
       </TableHeader>
 
       <TableBody>
-        <TableRow v-for="author in panel.paginatedAuthors.value" :key="author.id">
+        <TableRow
+          v-for="author in panel.paginatedAuthors.value"
+          :key="author.id"
+        >
           <TableCell>
             <div class="space-y-1">
               <p class="font-medium text-slate-950">{{ author.name }}</p>
-              <p class="text-sm text-slate-500 line-clamp-2">{{ author.bio || "No bio yet" }}</p>
+              <p class="text-sm text-slate-500 line-clamp-2">
+                {{ author.bio || "No bio yet" }}
+              </p>
             </div>
           </TableCell>
           <TableCell>{{ author.country || "Unknown" }}</TableCell>
@@ -48,10 +56,20 @@ const panel = useAdminPanel()
           <TableCell class="text-right">
             <div class="flex justify-end">
               <ButtonGroup>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.openEditDialog('authors', author)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.openEditDialog('authors', author)"
+                >
                   <Pencil class="size-4" /> Edit
                 </Button>
-                <Button variant="outline" size="sm" class="rounded-full" @click="panel.deleteAuthor(author)">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="rounded-full"
+                  @click="panel.deleteAuthor(author)"
+                >
                   <Trash2 class="size-4" /> Delete
                 </Button>
               </ButtonGroup>

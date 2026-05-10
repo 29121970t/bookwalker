@@ -61,7 +61,9 @@ function getPreviewBook(bookId: number): Book | null {
               ><Mail class="size-4" /> {{ account.email }}</span
             >
           </div>
-          <Button variant="outline" class="rounded-full" @click="auth.logout()">Logout</Button>
+          <Button variant="outline" class="rounded-full" @click="auth.logout()"
+            >Logout</Button
+          >
         </div>
       </CardContent>
     </Card>
@@ -108,8 +110,14 @@ function getPreviewBook(bookId: number): Book | null {
                   <span>x{{ item.quantity }}</span>
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent  class="h-400px bg-transparent shadow-none border-0">
-                <BookCover v-if="getPreviewBook(item.bookId)" :book="getPreviewBook(item.bookId)!" class="top-full relative"/>
+              <HoverCardContent
+                class="h-400px bg-transparent shadow-none border-0"
+              >
+                <BookCover
+                  v-if="getPreviewBook(item.bookId)"
+                  :book="getPreviewBook(item.bookId)!"
+                  class="top-full relative"
+                />
               </HoverCardContent>
             </HoverCard>
           </CardContent>
