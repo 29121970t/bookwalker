@@ -7,11 +7,9 @@ services:
         - PORT=80
     ports:
       - 80:80
-    # depends_on:
-    #   backend:
-    #     condition: service_healthy
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
   db:
     image: postgres:latest
     shm_size: 128mb
@@ -38,11 +36,6 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8080/books"]
-    #   interval: 3ms
-    #   timeout: 5s
-    #   retries: 5
 volumes:
   pgdata:
 

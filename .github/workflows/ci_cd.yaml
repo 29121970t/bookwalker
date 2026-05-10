@@ -1,0 +1,25 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build_frontend:
+    name: Build Frontend
+    runs-on: alpine-latest
+    env:
+      PORT: ${ vars.PORT }
+      BACKEND_URL: ${vars.BACKEND_URL}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v6
+      - name: Install depenencies
+        run: npm i
+      - name: Test Build
+        run: npm build
+
+      
+
