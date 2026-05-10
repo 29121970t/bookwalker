@@ -1,224 +1,241 @@
+# Bookwalker
 
-# Bookwalker API
+Bookwalker is a full-stack bookstore application with a Spring Boot backend and a
+Vue frontend. It supports catalog browsing, authentication, customer orders, and
+admin workflows for managing books, authors, publishers, genres, tags, clients,
+and orders.
 
-A simple RESTful API for managing a bookshop. Built with Spring Boot, this application provides endpoints to create, retrieve, update and delete books, authors, publishers, clients and orders.
+## Stack
 
-## Endpoints
+- Java 21
+- Spring Boot 4
+- Spring Web MVC, Spring Data JPA, Spring Security
+- PostgreSQL
+- JWT authentication
+- Maven
+- Checkstyle and JaCoCo
+- Vue 3, Vite, TypeScript, Tailwind CSS
+- shadcn-vue style component library
+- Docker Compose
+- GitHub Actions, SonarCloud, Render
 
-### Books
+## Project Structure
 
-| Method | Endpoint | Description | Request |
-|------|------|------|------|
-| GET | `/books` | Retrieve all books | None |
-| GET | `/books/{id}` | Retrieve a book by ID | None |
-| GET | `/books/search?name=` | Search books by name (partial match) | None |
-| POST | `/books` | Create a new book | `BookCreateDto` JSON |
-| PATCH | `/books/{id}` | Partially update book | `BookPatchDto` JSON |
-| PUT | `/books/{id}` | Fully update book | `BookPutDto` JSON |
-| DELETE | `/books/{id}` | Delete book | None |
-| POST | `/books/{bookId}/authors/{authorId}` | Add author to book | None |
-| DELETE | `/books/{bookId}/authors/{authorId}` | Remove author from book | None |
-| POST | `/books/{bookId}/publisher/{publisherId}` | Set book publisher | None |
-
----
-
-### Authors
-
-| Method | Endpoint | Description | Request |
-|------|------|------|------|
-| GET | `/authors` | Retrieve all authors | None |
-| GET | `/authors/{id}` | Retrieve author by ID | None |
-| POST | `/authors` | Create a new author | `AuthorCreateDto` JSON |
-| PATCH | `/authors/{id}` | Partially update author | `AuthorPatchDto` JSON |
-| PUT | `/authors/{id}` | Fully update author | `AuthorPutDto` JSON |
-| DELETE | `/authors/{id}` | Delete author | None |
-| POST | `/authors/{authorId}/books/{bookId}` | Add book to author | None |
-| DELETE | `/authors/{authorId}/books/{bookId}` | Remove book from author | None |
-
----
-
-### Publishers
-
-| Method | Endpoint | Description | Request |
-|------|------|------|------|
-| GET | `/publishers` | Retrieve all publishers | None |
-| GET | `/publishers/{id}` | Retrieve publisher by ID | None |
-| POST | `/publishers` | Create publisher | `PublisherCreateDto` JSON |
-| PATCH | `/publishers/{id}` | Partially update publisher | `PublisherPatchDto` JSON |
-| PUT | `/publishers/{id}` | Fully update publisher | `PublisherPutDto` JSON |
-| DELETE | `/publishers/{id}` | Delete publisher | None |
-| POST | `/publishers/{publisherId}/books/{bookId}` | Add book to publisher | None |
-| DELETE | `/publishers/{publisherId}/books/{bookId}` | Remove book from publisher | None |
-
----
-
-### Clients
-
-| Method | Endpoint | Description | Request |
-|------|------|------|------|
-| GET | `/clients` | Retrieve all clients | None |
-| GET | `/clients/{id}` | Retrieve client by ID | None |
-| POST | `/clients` | Create a client | `ClientCreateDto` JSON |
-| PATCH | `/clients/{id}` | Partially update client | `ClientPatchDto` JSON |
-| PUT | `/clients/{id}` | Fully update client | `ClientPutDto` JSON |
-| DELETE | `/clients/{id}` | Delete client | None |
-
----
-
-### Orders
-
-| Method | Endpoint | Description | Request |
-|------|------|------|------|
-| GET | `/orders` | Retrieve all orders | None |
-| GET | `/orders/{id}` | Retrieve order by ID | None |
-| POST | `/orders` | Create order | `OrderCreateDto` JSON |
-| POST | `/orders/bulk` | Bulk create orders atomically | `OrderCreateDto[]` JSON |
-| POST | `/orders/bulk/no-transaction` | Bulk create orders without atomicity | `OrderCreateDto[]` JSON |
-| PATCH | `/orders/{id}` | Partially update order | `OrderPatchDto` JSON |
-| PUT | `/orders/{id}` | Fully update order | `OrderPutDto` JSON |
-| DELETE | `/orders/{id}` | Delete order | None |
-
----
-
-## Data Model
-
-The application contains the following main entities:
-
-- **Book** – represents a book in the shop
-- **Author** – book authors (many-to-many with books)
-- **Publisher** – publishing companies (one-to-many with books)
-- **Client** – registered customers
-- **Order** – book purchase orders created by clients
-
-Relationships:
-
+```text
+.
+├── src/main/java/com/kruosant/bookwalker   # Backend application
+├── src/test/java/com/kruosant/bookwalker   # Backend tests
+├── frontend                                # Vue frontend
+├── compose.yaml                            # Local full-stack Docker setup
+├── Dockerfile                              # Backend image
+├── checkstyle.xml                          # Java style rules
+└── .github/workflows                       # CI/CD and Sonar workflows
 ```
-
-Author  ---< Book >--- Publisher
-|
-v
-Order
-|
-v
-Client
-
-````
-
----
-
-## Technologies Used
-
-- **Java 25**
-- **Spring Boot 3.x**
-- **Spring Web** – REST API
-- **Spring Data JPA** – ORM and database access
-- **Hibernate** – JPA implementation
-- **MapStruct** – object mapping between entities and DTOs
-- **Lombok** – reduces boilerplate code
-- **Maven** – dependency management
-
----
 
 ## Prerequisites
 
-- **JDK 17 or later**
-- **Maven 3.6+**
+- JDK 21
+- Maven, or the included Maven wrapper
+- Node.js 24+ for the frontend
+- PostgreSQL, unless you run the Docker Compose stack
+- Docker and Docker Compose for containerized local runs
 
----
+## Environment Variables
 
-## Running the Application
+The backend reads its configuration from environment variables:
 
-Clone the repository:
+```env
+DB_HOSTNAME=localhost
+DB_PORT=5432
+DB_NAME=bookwalker
+DB_USER=bookwalker
+DB_PASSWORD=bookwalker
+PORT=8080
+CORS_ALLOWED=http://localhost:5173,http://localhost:80
+JWT_SECRET=replace-with-a-long-secret
 
-```bash
-git clone https://github.com/29121970t/bookwalker.git
-cd bookwalker
-````
-
-Build the project:
-
-```bash
-mvn clean install
+ADMIN_SEED_ENABLED=false
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin-password
+ADMIN_NAME=Admin
+ADMIN_CITY=Minsk
 ```
 
-Run the application:
+For frontend development, point Vite at the local backend:
+
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+## Run Locally
+
+Start PostgreSQL first, then run the backend:
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
-The API will start on:
+The backend starts on the configured `PORT`, usually:
 
-```
+```text
 http://localhost:8080
 ```
 
----
+Run the frontend in a second terminal:
 
-## Example Request
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Create a book:
+The Vite dev server starts on:
 
+```text
+http://localhost:5173
+```
 
----
+## Run With Docker Compose
 
-### Report
+Create a `.env` file with the backend variables, then run:
 
-## Bulk Orders And Transaction Demo
+```bash
+docker compose up --build
+```
 
-Bulk order creation was added as a business operation for a bookstore: one request can register several purchases at once.
+The compose stack starts:
 
-Transactional endpoint:
+- Frontend: `http://localhost`
+- Backend: `http://localhost:8080`
+- PostgreSQL: `localhost:5432`
+
+## Backend Commands
+
+```bash
+./mvnw checkstyle:check
+./mvnw test
+./mvnw clean package
+./mvnw clean package jacoco:report
+```
+
+JaCoCo reports are written to:
+
+```text
+target/site/jacoco/index.html
+```
+
+## Frontend Commands
+
+```bash
+cd frontend
+npm install
+npm run dev
+npm run build
+npm run preview
+```
+
+## API Overview
+
+Authentication:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/auth/register` | Register a customer account |
+| `POST` | `/auth/login` | Login and receive a JWT |
+| `GET` | `/auth/me` | Get the authenticated user |
+
+Catalog:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/books` | List books |
+| `GET` | `/books/{id}` | Get one book |
+| `POST` | `/books` | Create a book |
+| `PATCH` | `/books/{id}` | Partially update a book |
+| `PUT` | `/books/{id}` | Replace a book |
+| `POST` | `/books/{id}/cover` | Upload a book cover |
+| `DELETE` | `/books/{id}` | Delete a book |
+| `GET` | `/authors` | List authors |
+| `GET` | `/authors/{id}` | Get one author |
+| `POST` | `/authors` | Create an author |
+| `PATCH` | `/authors/{id}` | Partially update an author |
+| `PUT` | `/authors/{id}` | Replace an author |
+| `DELETE` | `/authors/{id}` | Delete an author |
+| `GET` | `/publishers` | List publishers |
+| `GET` | `/publishers/{id}` | Get one publisher |
+| `POST` | `/publishers` | Create a publisher |
+| `PATCH` | `/publishers/{id}` | Partially update a publisher |
+| `PUT` | `/publishers/{id}` | Replace a publisher |
+| `DELETE` | `/publishers/{id}` | Delete a publisher |
+| `GET` | `/genres` | List genres |
+| `POST` | `/genres` | Create a genre |
+| `PUT` | `/genres/{id}` | Replace a genre |
+| `DELETE` | `/genres/{id}` | Delete a genre |
+| `GET` | `/tags` | List tags |
+| `POST` | `/tags` | Create a tag |
+| `PUT` | `/tags/{id}` | Replace a tag |
+| `DELETE` | `/tags/{id}` | Delete a tag |
+
+Clients and orders:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/clients` | List clients |
+| `GET` | `/clients/{id}` | Get one client |
+| `POST` | `/clients` | Create a client |
+| `PATCH` | `/clients/{id}` | Partially update a client |
+| `PUT` | `/clients/{id}` | Replace a client |
+| `DELETE` | `/clients/{id}` | Delete a client |
+| `GET` | `/orders` | List all orders |
+| `GET` | `/orders/me` | List orders for the authenticated customer |
+| `GET` | `/orders/{id}` | Get one order |
+| `POST` | `/orders` | Create an order |
+| `POST` | `/orders/bulk` | Create orders asynchronously in bulk |
+| `PATCH` | `/orders/{id}` | Partially update an order |
+| `PUT` | `/orders/{id}` | Replace an order |
+| `DELETE` | `/orders/{id}` | Delete an order |
+
+Utility:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/counter/raceDemo` | Demonstrates safe and unsafe counter increments |
+| `GET` | `/uploads/**` | Serves uploaded book cover files |
+
+OpenAPI UI is available at:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+## Authorization
+
+- Public: authentication endpoints, uploaded files, Swagger/OpenAPI pages, and
+  `GET` requests for books, authors, publishers, genres, and tags.
+- Authenticated customer: `POST /orders` and `GET /orders/me`.
+- Admin: client management, order administration, and catalog mutations.
+
+Send protected requests with:
 
 ```http
-POST /orders/bulk
+Authorization: Bearer <token>
 ```
 
-Non-transactional endpoint:
+## CI/CD
 
-```http
-POST /orders/bulk/no-transaction
-```
+The main CI/CD workflow runs on pushes to `main`:
 
-Example payload with one invalid item in the middle:
+- Builds the frontend with `npm run build`
+- Runs backend Checkstyle
+- Builds the backend and generates JaCoCo reports
+- Runs backend tests
+- Sends backend analysis to SonarCloud
+- Deploys frontend and backend services to Render
+- Runs Render health checks after deployment
 
-```json
-[
-  {
-    "client": 1,
-    "books": [1, 2],
-    "date": "2026-04-07T10:00:00"
-  },
-  {
-    "client": 999999,
-    "books": [1],
-    "date": "2026-04-07T10:05:00"
-  },
-  {
-    "client": 1,
-    "books": [2],
-    "date": "2026-04-07T10:10:00"
-  }
-]
-```
+## Notes
 
-How to see the difference in database state:
-
-1. Check the number of orders before the request:
-
-```sql
-SELECT COUNT(*) FROM orders;
-```
-
-2. Send the payload to `POST /orders/bulk/no-transaction`.
-3. Run `SELECT COUNT(*) FROM orders;` again.
-4. You will see that the first valid order stayed in the database, even though the whole bulk request ended with an error.
-5. Repeat the same payload with `POST /orders/bulk`.
-6. Run `SELECT COUNT(*) FROM orders;` again.
-7. The counter will not change, because `@Transactional` rolls back the whole bulk operation when one item fails.
-
-Implementation notes:
-
-- `OrderService#createBulkTransactional(...)` is atomic and uses `@Transactional`.
-- `OrderService#createBulkNonTransactional(...)` intentionally works without `@Transactional` for demonstration.
-- `OrderService` uses `Stream API` for processing the list of incoming orders and `Optional` for safe extraction of optional collections and dates.
+- Uploaded covers are stored in `./uploads` by default.
+- PostgreSQL schema updates are handled by Hibernate with `ddl-auto=update`.
+- The frontend component library lives in `frontend/src/components/ui`; unused
+  generated components should be removed when they are no longer imported.
