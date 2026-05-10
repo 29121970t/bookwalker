@@ -7,7 +7,7 @@ on:
 jobs:
   build_frontend:
     name: Build Frontend
-    runs-on: alpine-latest
+    runs-on: ubuntu-latest
     env:
       PORT: ${ vars.PORT }
       BACKEND_URL: ${vars.BACKEND_URL}
