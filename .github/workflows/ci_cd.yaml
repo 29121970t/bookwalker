@@ -66,7 +66,7 @@ jobs:
       DB_NAME: bookwalker
     steps:
       - name: Setup Docker Compose
-        uses: hoverkraft-tech/compose-action
+        uses: hoverkraft-tech/compose-action@d2bee4f07e8ca410d6b196d00f90c12e7d48c33a
       - name: Run compose
         run: docker compose up
   
