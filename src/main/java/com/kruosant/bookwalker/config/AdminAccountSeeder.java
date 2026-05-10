@@ -20,10 +20,10 @@ public class AdminAccountSeeder implements ApplicationRunner {
   private final ClientRepository clientRepository;
   private final PasswordEncoder passwordEncoder;
 
-  @Value("${app.admin.enabled:true}")
+  @Value("${app.admin.enabled:false}")
   private boolean enabled;
 
-  @Value("${app.admin.email:admin@bookwalker.local}")
+  @Value("${app.admin.email:admin@bookwalker.local:admin@test.com}")
   private String email;
 
   @Value("${app.admin.password:admin}")
