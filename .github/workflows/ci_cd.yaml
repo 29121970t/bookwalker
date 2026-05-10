@@ -35,6 +35,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Set up JDK 21
       uses: actions/setup-java@v5
       with:
@@ -44,7 +46,7 @@ jobs:
     - name: Checkstyle
       run: ./mvnw checkstyle:check
     - name: Build
-      run: ./mvnw clean package -DskipTests
+      run: ./mvnw clean package jacoco:report -DskipTests
     - name: Sonar Scan
       run: >
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
@@ -95,7 +97,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           wait_deploy: true
           github_deployment: true
-          deployment_environment: 'production'
+          deployment_environment: 'bookwalker-fontend'
 
   deploy_backend:
     permissions:
@@ -111,7 +113,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           wait_deploy: true
           github_deployment: true
-          deployment_environment: 'production'
+          deployment_environment: 'bookwalker-backend'
   
   health_check:
     needs: [deploy_frontend, deploy_backend]
