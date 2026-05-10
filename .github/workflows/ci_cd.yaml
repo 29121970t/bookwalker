@@ -46,7 +46,7 @@ jobs:
     - name: Checkstyle
       run: ./mvnw checkstyle:check
     - name: Build
-      run: ./mvnw clean package jacoco:report -DskipTests
+      run: ./mvnw clean package jacoco:report
     - name: Sonar Scan
       run: >
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
