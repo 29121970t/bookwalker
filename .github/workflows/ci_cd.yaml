@@ -97,7 +97,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           wait_deploy: true
           github_deployment: true
-          deployment_environment: 'bookwalker-fontend'
+          deployment_environment: 'main - bookwalker-fontend'
 
   deploy_backend:
     permissions:
@@ -113,7 +113,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           wait_deploy: true
           github_deployment: true
-          deployment_environment: 'bookwalker-backend'
+          deployment_environment: 'main - bookwalker-backend'
   
   health_check:
     needs: [deploy_frontend, deploy_backend]
