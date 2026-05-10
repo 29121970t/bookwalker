@@ -79,7 +79,7 @@ public class SecurityConfig {
     try {
       http
           .cors(Customizer.withDefaults())
-          // .csrf(csrf -> csrf.disable())
+          .csrf(csrf -> csrf.disable())
           .sessionManagement(session ->
               session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .authenticationProvider(authenticationProvider)
