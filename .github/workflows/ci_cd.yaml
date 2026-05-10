@@ -96,7 +96,7 @@ jobs:
           deployment_environment: 'production'
   
   health_check:
-    needs: deploy
+    needs: [deploy_frontend, deploy_backend]
     name: Health Check
     runs-on: ubuntu-latest
     steps:
